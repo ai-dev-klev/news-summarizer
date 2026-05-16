@@ -20,6 +20,8 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString)
                 .UseSnakeCaseNamingConvention());
 
+        services.AddScoped<DatabaseSeeder>();
+
         services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<INewsSourceRepository, NewsSourceRepository>();
         services.AddScoped<IUserRepository, UserRepository>();

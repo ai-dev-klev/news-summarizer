@@ -2,13 +2,18 @@ namespace NewsSummarizer.Core.Services;
 
 public sealed class RetentionPolicyService
 {
-    public DateTimeOffset GetArticleExpiration(DateTimeOffset fetchedAt)
+    public DateTimeOffset GetArticleExpiresAt(DateTimeOffset now)
     {
-        return fetchedAt.AddDays(14);
+        return now.AddDays(14);
     }
 
-    public DateTimeOffset GetNotificationExpiration(DateTimeOffset createdAt)
+    public DateTimeOffset GetNotificationExpiresAt(DateTimeOffset now)
     {
-        return createdAt.AddDays(30);
+        return now.AddDays(30);
+    }
+
+    public DateTimeOffset GetDetailedAnalysisExpiresAt(DateTimeOffset now)
+    {
+        return now.AddDays(30);
     }
 }

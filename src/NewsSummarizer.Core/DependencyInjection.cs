@@ -17,8 +17,8 @@ public static class DependencyInjection
         services.AddScoped<AnalyzeArticleUseCase>();
         services.AddScoped<BuildDailyDigestUseCase>();
         services.AddScoped<BuildOpportunityDigestUseCase>();
-        services.AddScoped<SendUrgentNotificationsUseCase>();
         services.AddScoped<CleanupExpiredDataUseCase>();
+        services.AddScoped<SendUrgentNotificationsUseCase>();
 
         return services;
     }
