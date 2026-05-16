@@ -11,7 +11,37 @@ public static class DependencyInjection
     {
         services.AddScoped<MockAiProvider>();
         services.AddHttpClient<YandexAiProvider>();
-        services.AddScoped<IAiProvider, MockAiProvider>();
+
+        var provider = GetConfiguredProvider(
+            configuration,
+            sectionKey: "Ai:Provider",
+            environmentKey: "AI_PROVIDER",
+            defaultValue: "Mock");
+
+        if (string.Equals(provider, "Yandex", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<IAiProvider, YandexAiProvider>();
+        }
+        else
+        {
+            services.AddScoped<IAiProvider, MockAiProvider>();
+        }
+
         return services;
+    }
+
+    private static string GetConfiguredProvider(
+        IConfiguration configuration,
+        string sectionKey,
+        string environmentKey,
+        string defaultValue)
+    {
+        var value =
+            configuration[sectionKey] ??
+            Environment.GetEnvironmentVariable(environmentKey);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? defaultValue
+            : value.Trim();
     }
 }

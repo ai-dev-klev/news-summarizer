@@ -6,17 +6,37 @@ namespace NewsSummarizer.Infrastructure.Fetching;
 
 public sealed class MockNewsFetcher : INewsFetcher
 {
-    public Task<IReadOnlyList<FetchedArticle>> FetchAsync(NewsSource source, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<FetchedArticle>> FetchAsync(
+        NewsSource source,
+        CancellationToken cancellationToken)
     {
+        var now = DateTimeOffset.UtcNow;
+
         IReadOnlyList<FetchedArticle> result =
         [
             new FetchedArticle(
-                "Sample news title",
-                "https://example.com/news",
-                "Sample description",
-                "Sample content",
+                "Sample general news title",
+                $"https://example.com/news/general-{now:yyyyMMddHHmm}",
+                "Sample general description",
+                "Sample general content",
                 "en",
-                DateTimeOffset.UtcNow)
+                now),
+
+            new FetchedArticle(
+                "AI startup market grows after new regulation",
+                $"https://example.com/news/ai-startup-market-{now:yyyyMMddHHmm}",
+                "A mock technology market article for opportunity digest testing.",
+                "A mock technology market article that should be treated as an opportunity signal.",
+                "en",
+                now),
+
+            new FetchedArticle(
+                "Urgent market crisis alert from mock source",
+                $"https://example.com/news/urgent-market-crisis-{now:yyyyMMddHHmm}",
+                "A mock urgent article for future urgent notification testing.",
+                "A mock urgent article for future urgent notification testing.",
+                "en",
+                now)
         ];
 
         return Task.FromResult(result);

@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
+using NewsSummarizer.Core.Entities;
+using NewsSummarizer.Core.Models;
 
 namespace NewsSummarizer.Core.Services;
 
@@ -8,9 +9,11 @@ public sealed class ArticleNormalizationService
 {
     public string NormalizeTitle(string title)
     {
-        var normalized = title.Trim().ToLowerInvariant();
-        normalized = Regex.Replace(normalized, @"\s+", " ");
-        return normalized;
+        return string.Join(
+            " ",
+            title.Trim()
+                .ToLowerInvariant()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
     }
 
     public string? ComputeContentHash(string? content)
@@ -22,6 +25,7 @@ public sealed class ArticleNormalizationService
 
         var normalized = content.Trim();
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(normalized));
+
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
@@ -39,16 +43,50 @@ public sealed class ArticleNormalizationService
 
         var builder = new UriBuilder(uri)
         {
-            Fragment = string.Empty
+            Fragment = string.Empty,
+            Query = RemoveTrackingQuery(uri.Query)
         };
 
-        var query = uri.Query.TrimStart('?')
-            .Split('&', StringSplitOptions.RemoveEmptyEntries)
-            .Where(x => !x.StartsWith("utm_", StringComparison.OrdinalIgnoreCase))
-            .Where(x => !x.StartsWith("yclid=", StringComparison.OrdinalIgnoreCase))
-            .Where(x => !x.StartsWith("gclid=", StringComparison.OrdinalIgnoreCase));
-
-        builder.Query = string.Join("&", query);
         return builder.Uri.ToString();
+    }
+
+    public ArticleDeduplicationKey BuildKey(NewsArticle article)
+    {
+        return new ArticleDeduplicationKey(
+            article.Url,
+            article.CanonicalUrl,
+            article.NormalizedTitle,
+            article.ContentHash,
+            article.DedupKey);
+    }
+
+    private static string RemoveTrackingQuery(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = query.TrimStart('?');
+
+        if (string.IsNullOrWhiteSpace(trimmed))
+        {
+            return string.Empty;
+        }
+
+        var keptParts = trimmed
+            .Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(part =>
+            {
+                var key = part.Split('=', 2)[0];
+
+                return !key.StartsWith("utm_", StringComparison.OrdinalIgnoreCase) &&
+                       !string.Equals(key, "yclid", StringComparison.OrdinalIgnoreCase) &&
+                       !string.Equals(key, "fbclid", StringComparison.OrdinalIgnoreCase) &&
+                       !string.Equals(key, "gclid", StringComparison.OrdinalIgnoreCase);
+            })
+            .ToArray();
+
+        return string.Join("&", keptParts);
     }
 }
