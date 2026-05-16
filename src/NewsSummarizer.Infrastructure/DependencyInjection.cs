@@ -31,10 +31,40 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IDetailedAnalysisRepository, DetailedAnalysisRepository>();
 
+        services.AddHttpClient();
         services.AddScoped<MockNewsFetcher>();
         services.AddScoped<RssNewsFetcher>();
-        services.AddScoped<INewsFetcher, MockNewsFetcher>();
+
+        var provider = GetConfiguredProvider(
+            configuration,
+            sectionKey: "NewsFetching:Provider",
+            environmentKey: "NEWS_FETCHING_PROVIDER",
+            defaultValue: "Mock");
+
+        if (string.Equals(provider, "Rss", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddScoped<INewsFetcher, RssNewsFetcher>();
+        }
+        else
+        {
+            services.AddScoped<INewsFetcher, MockNewsFetcher>();
+        }
 
         return services;
+    }
+
+    private static string GetConfiguredProvider(
+        IConfiguration configuration,
+        string sectionKey,
+        string environmentKey,
+        string defaultValue)
+    {
+        var value =
+            configuration[sectionKey] ??
+            Environment.GetEnvironmentVariable(environmentKey);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? defaultValue
+            : value.Trim();
     }
 }
