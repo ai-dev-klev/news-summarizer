@@ -13,45 +13,70 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddAi(this IServiceCollection services, IConfiguration configuration)
     {
+        // Backward compatibility: old section first, new section second.
+        services.Configure<AiProviderOptions>(configuration.GetSection("Ai"));
         services.Configure<AiProviderOptions>(configuration.GetSection("AiProvider"));
 
         services.PostConfigure<AiProviderOptions>(options =>
         {
+            // Env variables must win over defaults from AiProviderOptions.
             options.Provider = FirstNotEmpty(
-                options.Provider,
                 configuration["YANDEX_AI_PROVIDER"],
-                configuration["AI_PROVIDER"])
-                ?? options.Provider;
+                configuration["AI_PROVIDER"],
+                configuration["AiProvider:Provider"],
+                configuration["Ai:Provider"],
+                options.Provider,
+                "Mock")!;
 
             options.ApiKey = FirstNotEmpty(
-                options.ApiKey,
                 configuration["YANDEX_AI_API_KEY"],
-                configuration["YANDEX_API_KEY"])
-                ?? options.ApiKey;
+                configuration["YANDEX_API_KEY"],
+                configuration["AiProvider:ApiKey"],
+                configuration["Ai:ApiKey"],
+                options.ApiKey,
+                string.Empty)!;
 
             options.FolderId = FirstNotEmpty(
-                options.FolderId,
                 configuration["YANDEX_AI_FOLDER_ID"],
-                configuration["YANDEX_FOLDER_ID"])
-                ?? options.FolderId;
+                configuration["YANDEX_FOLDER_ID"],
+                configuration["AiProvider:FolderId"],
+                configuration["Ai:FolderId"],
+                options.FolderId,
+                string.Empty)!;
 
             options.BaseUrl = FirstNotEmpty(
-                options.BaseUrl,
                 configuration["YANDEX_AI_BASE_URL"],
-                configuration["YANDEX_BASE_URL"])
-                ?? options.BaseUrl;
+                configuration["YANDEX_BASE_URL"],
+                configuration["AiProvider:BaseUrl"],
+                configuration["Ai:BaseUrl"],
+                options.BaseUrl,
+                "https://ai.api.cloud.yandex.net/v1")!;
 
             options.Model = FirstNotEmpty(
-                options.Model,
                 configuration["YANDEX_AI_MODEL"],
-                configuration["YANDEX_MODEL"])
-                ?? options.Model;
+                configuration["YANDEX_MODEL"],
+                configuration["AiProvider:Model"],
+                configuration["Ai:Model"],
+                options.Model,
+                "yandexgpt/rc")!;
 
             options.PromptVersion = FirstNotEmpty(
-                options.PromptVersion,
                 configuration["YANDEX_AI_PROMPT_VERSION"],
-                configuration["YANDEX_PROMPT_VERSION"])
-                ?? options.PromptVersion;
+                configuration["YANDEX_PROMPT_VERSION"],
+                configuration["AiProvider:PromptVersion"],
+                configuration["Ai:PromptVersion"],
+                options.PromptVersion,
+                "v1")!;
+
+            if (options.RequestTimeoutSeconds <= 0)
+            {
+                options.RequestTimeoutSeconds = 60;
+            }
+
+            if (options.MaxOutputTokens <= 0)
+            {
+                options.MaxOutputTokens = 800;
+            }
         });
 
         services.AddSingleton<AiResponseParser>();

@@ -10,7 +10,7 @@ public static class NewsClassificationPrompt
     public const string SystemMessage = """
 You are a strict news analysis engine for a personalized news summarizer.
 
-Analyze the article and return only valid JSON matching the provided schema.
+Analyze the article and return only valid JSON matching the required schema.
 
 Rules:
 - Use only facts from the title, description and content provided by the user.
@@ -20,6 +20,22 @@ Rules:
 - 0 means not relevant at all; 100 means maximally relevant.
 - Return no markdown.
 - Return no text outside JSON.
+""";
+
+    public const string JsonOnlyFallbackInstruction = """
+Return exactly one JSON object with these fields:
+{
+  "category": "technology | business | science | politics | security | education | health | culture | sports | world | other",
+  "importanceScore": 0,
+  "urgencyScore": 0,
+  "opportunityScore": 0,
+  "summary": "1-2 sentence summary",
+  "reason": "Why this article matters",
+  "opportunityReason": "Why this article may or may not be useful for deeper analysis",
+  "dailyDigestCandidate": true,
+  "opportunityDigestCandidate": false,
+  "urgentCandidate": false
+}
 """;
 
     public const string JsonSchema = """
@@ -93,6 +109,8 @@ Rules:
     {
         var builder = new StringBuilder();
 
+        builder.AppendLine(JsonOnlyFallbackInstruction);
+        builder.AppendLine();
         builder.AppendLine("Analyze this news article.");
         builder.AppendLine();
         AppendField(builder, "Title", article.Title);

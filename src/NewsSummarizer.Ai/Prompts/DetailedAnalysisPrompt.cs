@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using NewsSummarizer.Core.Entities;
 
@@ -65,15 +67,20 @@ Rules:
     {
         builder.AppendLine($"{name}:");
 
-        if (values.Count == 0)
+        var normalized = values
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.Trim())
+            .ToArray();
+
+        if (normalized.Length == 0)
         {
             builder.AppendLine("[not provided]");
         }
         else
         {
-            foreach (var value in values.Where(x => !string.IsNullOrWhiteSpace(x)))
+            foreach (var value in normalized)
             {
-                builder.AppendLine("- " + value.Trim());
+                builder.AppendLine("- " + value);
             }
         }
 

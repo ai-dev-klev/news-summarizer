@@ -45,9 +45,7 @@ public sealed class AiResponseParser
 
     private static string ExtractJsonObject(string rawResponse)
     {
-        var text = rawResponse.Trim();
-
-        text = RemoveMarkdownFence(text);
+        var text = RemoveMarkdownFence(rawResponse.Trim());
 
         if (text.StartsWith('{') && text.EndsWith('}'))
         {

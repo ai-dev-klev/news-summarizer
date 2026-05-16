@@ -9,10 +9,11 @@ using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
 using NewsSummarizer.Core.Models;
 using OpenAI.Chat;
+using System.ClientModel;
 
 namespace NewsSummarizer.Ai.Providers;
 
-public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
+public sealed class YandexAiProvider : IAiProvider
 {
     private readonly YandexChatClientFactory _clientFactory;
     private readonly AiResponseParser _parser;
@@ -31,6 +32,12 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
         _logger = logger;
     }
 
+    public AiProviderType Provider => AiProviderType.Yandex;
+
+    public string Model => _options.Model;
+
+    public string PromptVersion => _options.PromptVersion;
+
     public async Task<ArticleAiAnalysisResult> AnalyzeArticleAsync(
         NewsArticle article,
         CancellationToken cancellationToken)
@@ -43,22 +50,19 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
             article.Title.Length,
             article.Content?.Length ?? 0);
 
+        using var timeoutCts = CreateTimeoutTokenSource(cancellationToken);
+        var effectiveCancellationToken = timeoutCts.Token;
+
+        var client = _clientFactory.Create();
+        var messages = BuildClassificationMessages(article);
+
         try
         {
-            var client = _clientFactory.Create();
-
-            var messages = new List<ChatMessage>
-            {
-                ChatMessage.CreateSystemMessage(NewsClassificationPrompt.SystemMessage),
-                ChatMessage.CreateUserMessage(NewsClassificationPrompt.Build(article))
-            };
-
-            var completion = await client.CompleteChatAsync(
+            var rawText = await CompleteAsync(
+                client,
                 messages,
-                BuildClassificationOptions(),
-                cancellationToken);
-
-            var rawText = ExtractText(completion.Value);
+                BuildClassificationOptions(useStructuredOutput: true),
+                effectiveCancellationToken);
 
             var result = _parser.ParseArticleAnalysis(rawText);
 
@@ -71,6 +75,21 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
                 result.OpportunityScore);
 
             return result;
+        }
+        catch (ClientResultException exception) when (IsUnsupportedStructuredOutputError(exception))
+        {
+            _logger.LogWarning(
+                exception,
+                "Yandex AI structured output request failed. Retrying without ResponseFormat. ArticleId: {ArticleId}",
+                article.Id);
+
+            var rawText = await CompleteAsync(
+                client,
+                messages,
+                BuildClassificationOptions(useStructuredOutput: false),
+                effectiveCancellationToken);
+
+            return _parser.ParseArticleAnalysis(rawText);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -96,27 +115,23 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
             article.Id,
             preferences.UserId);
 
+        using var timeoutCts = CreateTimeoutTokenSource(cancellationToken);
+        var effectiveCancellationToken = timeoutCts.Token;
+
         try
         {
             var client = _clientFactory.Create();
-
             var messages = new List<ChatMessage>
             {
-                ChatMessage.CreateSystemMessage(DetailedAnalysisPrompt.SystemMessage),
-                ChatMessage.CreateUserMessage(DetailedAnalysisPrompt.Build(article, preferences))
+                new SystemChatMessage(DetailedAnalysisPrompt.SystemMessage),
+                new UserChatMessage(DetailedAnalysisPrompt.Build(article, preferences))
             };
 
-            var completion = await client.CompleteChatAsync(
+            var rawText = await CompleteAsync(
+                client,
                 messages,
                 BuildTextOptions(),
-                cancellationToken);
-
-            var rawText = ExtractText(completion.Value);
-
-            if (string.IsNullOrWhiteSpace(rawText))
-            {
-                throw new InvalidOperationException("Yandex AI returned empty detailed analysis response.");
-            }
+                effectiveCancellationToken);
 
             return new DetailedAnalysisResult(rawText.Trim(), rawText);
         }
@@ -132,17 +147,32 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
         }
     }
 
-    private ChatCompletionOptions BuildClassificationOptions()
+    private static List<ChatMessage> BuildClassificationMessages(NewsArticle article)
     {
-        return new ChatCompletionOptions
+        return
+        [
+            new SystemChatMessage(NewsClassificationPrompt.SystemMessage),
+            new UserChatMessage(NewsClassificationPrompt.Build(article))
+        ];
+    }
+
+    private ChatCompletionOptions BuildClassificationOptions(bool useStructuredOutput)
+    {
+        var options = new ChatCompletionOptions
         {
             Temperature = _options.Temperature,
-            MaxOutputTokenCount = _options.MaxOutputTokens,
-            ResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
+            MaxOutputTokenCount = _options.MaxOutputTokens
+        };
+
+        if (useStructuredOutput)
+        {
+            options.ResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
                 jsonSchemaFormatName: "news_article_analysis",
                 jsonSchema: BinaryData.FromString(NewsClassificationPrompt.JsonSchema),
-                jsonSchemaIsStrict: true)
-        };
+                jsonSchemaIsStrict: true);
+        }
+
+        return options;
     }
 
     private ChatCompletionOptions BuildTextOptions()
@@ -152,6 +182,31 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
             Temperature = _options.Temperature,
             MaxOutputTokenCount = Math.Max(_options.MaxOutputTokens, 1200)
         };
+    }
+
+    private CancellationTokenSource CreateTimeoutTokenSource(CancellationToken cancellationToken)
+    {
+        var timeoutSeconds = _options.RequestTimeoutSeconds <= 0
+            ? 60
+            : _options.RequestTimeoutSeconds;
+
+        var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+        return timeoutCts;
+    }
+
+    private static async Task<string> CompleteAsync(
+        ChatClient client,
+        IReadOnlyList<ChatMessage> messages,
+        ChatCompletionOptions options,
+        CancellationToken cancellationToken)
+    {
+        var completion = await client.CompleteChatAsync(
+            messages,
+            options,
+            cancellationToken);
+
+        return ExtractText(completion.Value);
     }
 
     private static string ExtractText(ChatCompletion completion)
@@ -169,5 +224,12 @@ public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
         }
 
         return text;
+    }
+
+    private static bool IsUnsupportedStructuredOutputError(ClientResultException exception)
+    {
+        // OpenAI-compatible providers may return a generic 400 for unsupported response_format/json_schema.
+        // The fallback repeats the same prompt without ResponseFormat, so real request errors will still fail there.
+        return exception.Status == 400;
     }
 }

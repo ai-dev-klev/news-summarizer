@@ -25,11 +25,10 @@ public sealed class YandexChatClientFactory
             ProjectId = _options.FolderId
         };
 
-        var openAiClient = new OpenAIClient(
-            new ApiKeyCredential(_options.ApiKey),
-            clientOptions);
-
-        return openAiClient.GetChatClient(BuildModelUri());
+        return new ChatClient(
+            model: BuildModelUri(),
+            credential: new ApiKeyCredential(_options.ApiKey),
+            options: clientOptions);
     }
 
     public string BuildModelUri()
