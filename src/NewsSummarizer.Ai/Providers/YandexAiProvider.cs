@@ -1,10 +1,11 @@
 using NewsSummarizer.Core.Entities;
+using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
 using NewsSummarizer.Core.Models;
 
 namespace NewsSummarizer.Ai.Providers;
 
-public sealed class YandexAiProvider : IAiProvider
+public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
 {
     private readonly HttpClient _httpClient;
 
@@ -13,7 +14,13 @@ public sealed class YandexAiProvider : IAiProvider
         _httpClient = httpClient;
     }
 
-    public Task<ArticleAiAnalysisResult> AnalyzeArticleAsync(NewsArticle article, CancellationToken cancellationToken)
+    public AiProviderType Provider => AiProviderType.Yandex;
+    public string Model => "yandex-ai";
+    public string PromptVersion => "v1";
+
+    public Task<ArticleAiAnalysisResult> AnalyzeArticleAsync(
+        NewsArticle article,
+        CancellationToken cancellationToken)
     {
         throw new NotImplementedException("Yandex AI provider is not implemented yet.");
     }

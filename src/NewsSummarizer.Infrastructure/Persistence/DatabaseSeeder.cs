@@ -6,57 +6,122 @@ namespace NewsSummarizer.Infrastructure.Persistence;
 
 public sealed class DatabaseSeeder
 {
-    private readonly NewsSummarizerDbContext _context;
+    private readonly NewsSummarizerDbContext _dbContext;
 
-    public DatabaseSeeder(NewsSummarizerDbContext context)
+    public DatabaseSeeder(NewsSummarizerDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
-    public async Task SeedAsync(CancellationToken cancellationToken = default)
-    {
-        await SeedNewsSourcesAsync(cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task SeedNewsSourcesAsync(CancellationToken cancellationToken)
-    {
-        var sources = GetSeedSources();
-
-        foreach (var source in sources)
-        {
-            var exists = await _context.NewsSources
-                .AnyAsync(s => s.Url == source.Url, cancellationToken);
-
-            if (!exists)
-                _context.NewsSources.Add(source);
-        }
-    }
-
-    private static IReadOnlyList<NewsSource> GetSeedSources()
+    public async Task SeedAsync(CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
 
+        await SeedNewsSourcesAsync(now, cancellationToken);
+        await SeedDemoUserAsync(now, cancellationToken);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task SeedNewsSourcesAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        foreach (var source in GetSeedSources(now))
+        {
+            var exists = await _dbContext.NewsSources
+                .AnyAsync(existing => existing.Url == source.Url, cancellationToken);
+
+            if (!exists)
+            {
+                await _dbContext.NewsSources.AddAsync(source, cancellationToken);
+            }
+        }
+    }
+
+    private async Task SeedDemoUserAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(existing => existing.TelegramUserId == 1, cancellationToken);
+
+        if (user is null)
+        {
+            user = new User
+            {
+                Id = Guid.NewGuid(),
+                TelegramUserId = 1,
+                Username = "demo_user",
+                FirstName = "Demo",
+                Status = UserStatus.Active,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            await _dbContext.Users.AddAsync(user, cancellationToken);
+        }
+
+        var preferences = await _dbContext.UserPreferences
+            .FirstOrDefaultAsync(existing => existing.UserId == user.Id, cancellationToken);
+
+        if (preferences is null)
+        {
+            preferences = new UserPreferences
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                EnabledCategories =
+                [
+                    "general",
+                    "technology",
+                    "business",
+                    "sport",
+                    "science",
+                    "research",
+                    "startups",
+                    "market"
+                ],
+                UrgentTopics =
+                [
+                    "war",
+                    "pandemic",
+                    "market_crash",
+                    "critical_event"
+                ],
+                ImportantTopicsText = "technology, business, sport, science, research, startups, market, important local events",
+                ExcludedTopicsText = "clickbait",
+                DailyDigestEnabled = true,
+                DailyDigestTime = new TimeOnly(9, 0),
+                OpportunityDigestEnabled = true,
+                OpportunityDigestTime = new TimeOnly(18, 0),
+                UrgentNotificationsEnabled = true,
+                MaxItemsPerDigest = 10,
+                Timezone = "Europe/Moscow",
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            await _dbContext.UserPreferences.AddAsync(preferences, cancellationToken);
+        }
+    }
+
+    private static IReadOnlyList<NewsSource> GetSeedSources(DateTimeOffset now)
+    {
         return
         [
-            // ── Mock ──────────────────────────────────────────────────────────
             new NewsSource
             {
                 Id = Guid.NewGuid(),
-                Name = "Mock Source",
+                Name = "Mock source",
                 SourceType = SourceType.Mock,
-                Url = "mock://source",
+                Url = "mock://news",
                 Language = "en",
-                DefaultCategories = ["general"],
+                DefaultCategories = ["general", "technology"],
                 IsEnabled = true,
-                IsFastSource = false,
+                IsFastSource = true,
                 FetchIntervalMinutes = 60,
                 TrustScore = 50,
                 CreatedAt = now,
                 UpdatedAt = now
             },
 
-            // ── General news ──────────────────────────────────────────────────
             new NewsSource
             {
                 Id = Guid.NewGuid(),
@@ -148,7 +213,6 @@ public sealed class DatabaseSeeder
                 UpdatedAt = now
             },
 
-            // ── Technology / business ─────────────────────────────────────────
             new NewsSource
             {
                 Id = Guid.NewGuid(),
@@ -195,7 +259,6 @@ public sealed class DatabaseSeeder
                 UpdatedAt = now
             },
 
-            // ── Research / science / opportunity ──────────────────────────────
             new NewsSource
             {
                 Id = Guid.NewGuid(),
@@ -240,7 +303,7 @@ public sealed class DatabaseSeeder
                 TrustScore = 85,
                 CreatedAt = now,
                 UpdatedAt = now
-            },
+            }
         ];
     }
 }

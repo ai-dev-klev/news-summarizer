@@ -12,18 +12,37 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("Default")
-            ?? "Host=localhost;Port=5432;Database=news_summarizer;Username=postgres;Password=postgres";
+        var connectionString =
+            configuration.GetConnectionString("Default") ??
+            "Host=localhost;Port=5432;Database=news_summarizer;Username=postgres;Password=postgres";
 
-        services.AddDbContext<NewsSummarizerDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<NewsSummarizerDbContext>(options =>
+            options.UseNpgsql(connectionString)
+                .UseSnakeCaseNamingConvention());
 
-        services.AddScoped<IArticleRepository, ArticleRepository>();
         services.AddScoped<DatabaseSeeder>();
 
-        var fetcherProvider = configuration["NewsFetching:Provider"] ?? "Mock";
-        if (fetcherProvider.Equals("Rss", StringComparison.OrdinalIgnoreCase))
+        services.AddScoped<IArticleRepository, ArticleRepository>();
+        services.AddScoped<INewsSourceRepository, NewsSourceRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
+        services.AddScoped<IArticleAiResultRepository, ArticleAiResultRepository>();
+        services.AddScoped<IDigestRepository, DigestRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IDetailedAnalysisRepository, DetailedAnalysisRepository>();
+
+        services.AddHttpClient();
+        services.AddScoped<MockNewsFetcher>();
+        services.AddScoped<RssNewsFetcher>();
+
+        var provider = GetConfiguredProvider(
+            configuration,
+            sectionKey: "NewsFetching:Provider",
+            environmentKey: "NEWS_FETCHING_PROVIDER",
+            defaultValue: "Mock");
+
+        if (string.Equals(provider, "Rss", StringComparison.OrdinalIgnoreCase))
         {
-            services.AddHttpClient<RssNewsFetcher>();
             services.AddScoped<INewsFetcher, RssNewsFetcher>();
         }
         else
@@ -33,4 +52,19 @@ public static class DependencyInjection
 
         return services;
     }
-} 
+
+    private static string GetConfiguredProvider(
+        IConfiguration configuration,
+        string sectionKey,
+        string environmentKey,
+        string defaultValue)
+    {
+        var value =
+            configuration[sectionKey] ??
+            Environment.GetEnvironmentVariable(environmentKey);
+
+        return string.IsNullOrWhiteSpace(value)
+            ? defaultValue
+            : value.Trim();
+    }
+}
