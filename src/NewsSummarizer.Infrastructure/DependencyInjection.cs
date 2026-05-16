@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IDigestRepository, DigestRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IDetailedAnalysisRepository, DetailedAnalysisRepository>();
+        services.AddScoped<ICleanupRepository, CleanupRepository>();
 
         services.AddScoped<MockNewsFetcher>();
         services.AddHttpClient<RssNewsFetcher>();

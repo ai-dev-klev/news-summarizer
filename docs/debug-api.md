@@ -56,6 +56,12 @@ Invoke-RestMethod -Method Post http://localhost:5000/debug/build-opportunity-dig
 Invoke-RestMethod -Method Post http://localhost:5000/debug/send-urgent-notifications
 ```
 
+## Cleanup expired data
+
+```powershell
+Invoke-RestMethod -Method Post http://localhost:5000/debug/cleanup
+```
+
 ## See recent articles
 
 ```powershell

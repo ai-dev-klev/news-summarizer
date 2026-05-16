@@ -34,3 +34,8 @@ public sealed record SendUrgentNotificationsSummary(
     int UsersSkippedDisabled,
     int NotificationsSkippedExisting,
     int ArticlesSkippedByPreferences);
+
+public sealed record CleanupExpiredDataSummary(
+    int ExpiredArticlesDeleted,
+    int ExpiredNotificationsDeleted,
+    int ExpiredDetailedAnalysesDeleted);
