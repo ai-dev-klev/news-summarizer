@@ -26,3 +26,11 @@ public sealed record BuildOpportunityDigestSummary(
     int UsersSkippedDisabled,
     int UsersSkippedExistingDigest,
     int UsersSkippedNoItems);
+
+public sealed record SendUrgentNotificationsSummary(
+    int UsersChecked,
+    int ArticlesChecked,
+    int NotificationsCreated,
+    int UsersSkippedDisabled,
+    int NotificationsSkippedExisting,
+    int ArticlesSkippedByPreferences);

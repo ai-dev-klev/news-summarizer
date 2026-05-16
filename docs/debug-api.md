@@ -50,6 +50,12 @@ Invoke-RestMethod -Method Post http://localhost:5000/debug/build-daily-digests
 Invoke-RestMethod -Method Post http://localhost:5000/debug/build-opportunity-digests
 ```
 
+## Create urgent notifications
+
+```powershell
+Invoke-RestMethod -Method Post http://localhost:5000/debug/send-urgent-notifications
+```
+
 ## See recent articles
 
 ```powershell
@@ -60,6 +66,12 @@ Invoke-RestMethod http://localhost:5000/debug/articles/recent | ConvertTo-Json -
 
 ```powershell
 Invoke-RestMethod http://localhost:5000/debug/digests/recent | ConvertTo-Json -Depth 10
+```
+
+## See recent notifications
+
+```powershell
+Invoke-RestMethod http://localhost:5000/debug/notifications/recent | ConvertTo-Json -Depth 10
 ```
 
 ## See sources

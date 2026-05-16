@@ -69,6 +69,14 @@ app.MapPost("/debug/build-opportunity-digests", async (
 
     return Results.Ok(result);
 });
+app.MapPost("/debug/send-urgent-notifications", async (
+    SendUrgentNotificationsUseCase useCase,
+    CancellationToken cancellationToken) =>
+{
+    var result = await useCase.ExecuteAsync(cancellationToken);
+
+    return Results.Ok(result);
+});
 
 app.MapGet("/debug/articles/recent", async (
     NewsSummarizerDbContext dbContext,
@@ -175,6 +183,35 @@ app.MapGet("/debug/digests/recent", async (
         .ToListAsync(cancellationToken);
 
     return Results.Ok(digests);
+});
+
+app.MapGet("/debug/notifications/recent", async (
+    NewsSummarizerDbContext dbContext,
+    CancellationToken cancellationToken,
+    int limit = 50) =>
+{
+    var notifications = await dbContext.Notifications
+        .OrderByDescending(notification => notification.CreatedAt)
+        .Take(limit)
+        .Select(notification => new
+        {
+            notification.Id,
+            notification.UserId,
+            notification.ArticleId,
+            notification.DigestId,
+            notification.NotificationType,
+            notification.DedupKey,
+            notification.Status,
+            notification.TitleSnapshot,
+            notification.MessageSnapshot,
+            notification.SentAt,
+            notification.ExpiresAt,
+            notification.ErrorMessage,
+            notification.CreatedAt
+        })
+        .ToListAsync(cancellationToken);
+
+    return Results.Ok(notifications);
 });
 
 app.MapGet("/debug/sources", async (
