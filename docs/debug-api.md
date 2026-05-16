@@ -44,6 +44,12 @@ Invoke-RestMethod -Method Post "http://localhost:5000/debug/analyze-articles?lim
 Invoke-RestMethod -Method Post http://localhost:5000/debug/build-daily-digests
 ```
 
+## Build opportunity digests
+
+```powershell
+Invoke-RestMethod -Method Post http://localhost:5000/debug/build-opportunity-digests
+```
+
 ## See recent articles
 
 ```powershell
@@ -75,5 +81,6 @@ POST /debug/seed
 POST /debug/fetch-news
 POST /debug/analyze-articles
 POST /debug/build-daily-digests
+POST /debug/build-opportunity-digests
 GET  /debug/digests/recent
 ```

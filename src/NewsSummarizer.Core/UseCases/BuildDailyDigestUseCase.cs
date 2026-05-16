@@ -38,8 +38,8 @@ public sealed class BuildDailyDigestUseCase
     public async Task<BuildDailyDigestSummary> ExecuteAsync(CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
-        var periodEnd = now;
-        var periodStart = now.AddDays(-1);
+        var periodStart = new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
+        var periodEnd = periodStart.AddDays(1);
 
         return await ExecuteAsync(periodStart, periodEnd, cancellationToken);
     }
@@ -101,9 +101,12 @@ public sealed class BuildDailyDigestUseCase
             }
 
             var selectedItems = SelectItems(
-                articles,
-                latestResultByArticleId,
-                preferences)
+                    articles,
+                    latestResultByArticleId,
+                    preferences)
+                .OrderByDescending(item => item.AiResult.ImportanceScore)
+                .ThenByDescending(item => item.AiResult.UrgencyScore)
+                .ThenByDescending(item => item.Article.PublishedAt ?? item.Article.FetchedAt)
                 .Take(Math.Max(1, preferences.MaxItemsPerDigest))
                 .ToList();
 
@@ -113,6 +116,7 @@ public sealed class BuildDailyDigestUseCase
                 continue;
             }
 
+            var now = DateTimeOffset.UtcNow;
             var digest = new Digest
             {
                 Id = Guid.NewGuid(),
@@ -121,8 +125,8 @@ public sealed class BuildDailyDigestUseCase
                 PeriodStart = periodStart,
                 PeriodEnd = periodEnd,
                 Status = DigestStatus.Created,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow
+                CreatedAt = now,
+                UpdatedAt = now
             };
 
             var digestItems = selectedItems

@@ -61,6 +61,15 @@ app.MapPost("/debug/build-daily-digests", async (
     return Results.Ok(result);
 });
 
+app.MapPost("/debug/build-opportunity-digests", async (
+    BuildOpportunityDigestUseCase useCase,
+    CancellationToken cancellationToken) =>
+{
+    var result = await useCase.ExecuteAsync(cancellationToken);
+
+    return Results.Ok(result);
+});
+
 app.MapGet("/debug/articles/recent", async (
     NewsSummarizerDbContext dbContext,
     CancellationToken cancellationToken,

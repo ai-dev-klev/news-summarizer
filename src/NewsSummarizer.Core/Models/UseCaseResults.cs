@@ -19,3 +19,10 @@ public sealed record BuildDailyDigestSummary(
     int UsersSkippedDisabled,
     int UsersSkippedExistingDigest,
     int UsersSkippedNoItems);
+
+public sealed record BuildOpportunityDigestSummary(
+    int UsersChecked,
+    int DigestsCreated,
+    int UsersSkippedDisabled,
+    int UsersSkippedExistingDigest,
+    int UsersSkippedNoItems);
