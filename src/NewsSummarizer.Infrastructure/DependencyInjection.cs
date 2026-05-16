@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddDbContext<NewsSummarizerDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddScoped<IArticleRepository, ArticleRepository>();
+        services.AddScoped<DatabaseSeeder>();
 
         var fetcherProvider = configuration["NewsFetching:Provider"] ?? "Mock";
         if (fetcherProvider.Equals("Rss", StringComparison.OrdinalIgnoreCase))

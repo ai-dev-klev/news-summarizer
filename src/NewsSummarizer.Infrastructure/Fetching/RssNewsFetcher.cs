@@ -26,9 +26,11 @@ public sealed class RssNewsFetcher : INewsFetcher
         {
             xml = await _httpClient.GetStringAsync(source.Url, cancellationToken);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            return [];
+            throw new InvalidOperationException(
+                $"Failed to fetch RSS source '{source.Name}' from '{source.Url}'.",
+                exception);
         }
 
         try
@@ -38,9 +40,11 @@ public sealed class RssNewsFetcher : INewsFetcher
                 ? ParseAtom(doc, source.Language)
                 : ParseRss(doc, source.Language);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            return [];
+            throw new InvalidOperationException(
+                $"Failed to parse RSS source '{source.Name}' from '{source.Url}'.",
+                exception);
         }
     }
 

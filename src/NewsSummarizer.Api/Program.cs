@@ -1,6 +1,7 @@
 using NewsSummarizer.Ai;
 using NewsSummarizer.Core;
 using NewsSummarizer.Infrastructure;
+using NewsSummarizer.Infrastructure.Persistence;
 using NewsSummarizer.Telegram;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,11 @@ builder.Services.AddTelegram(builder.Configuration);
 var app = builder.Build();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "news-summarizer" }));
+app.MapPost("/debug/seed", async (DatabaseSeeder seeder, CancellationToken ct) =>
+{
+    await seeder.SeedAsync(ct);
+    return Results.Ok(new { status = "seeded" });
+});
 app.MapPost("/debug/fetch-news", () => Results.Accepted());
 app.MapPost("/debug/analyze-articles", () => Results.Accepted());
 app.MapPost("/debug/build-daily-digests", () => Results.Accepted());
