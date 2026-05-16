@@ -31,9 +31,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IDetailedAnalysisRepository, DetailedAnalysisRepository>();
 
-        services.AddHttpClient();
         services.AddScoped<MockNewsFetcher>();
-        services.AddScoped<RssNewsFetcher>();
+        services.AddHttpClient<RssNewsFetcher>();
 
         var provider = GetConfiguredProvider(
             configuration,
@@ -60,8 +59,8 @@ public static class DependencyInjection
         string defaultValue)
     {
         var value =
-            configuration[sectionKey] ??
-            Environment.GetEnvironmentVariable(environmentKey);
+            Environment.GetEnvironmentVariable(environmentKey) ??
+            configuration[sectionKey];
 
         return string.IsNullOrWhiteSpace(value)
             ? defaultValue

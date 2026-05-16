@@ -1,4 +1,5 @@
 using NewsSummarizer.Core.Entities;
+using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
 using NewsSummarizer.Core.Models;
 
@@ -10,6 +11,11 @@ public sealed class MockNewsFetcher : INewsFetcher
         NewsSource source,
         CancellationToken cancellationToken)
     {
+        if (source.SourceType != SourceType.Mock)
+        {
+            return Task.FromResult<IReadOnlyList<FetchedArticle>>([]);
+        }
+
         var now = DateTimeOffset.UtcNow;
 
         IReadOnlyList<FetchedArticle> result =

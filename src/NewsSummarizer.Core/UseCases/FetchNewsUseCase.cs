@@ -32,6 +32,7 @@ public sealed class FetchNewsUseCase
     {
         var now = DateTimeOffset.UtcNow;
         var sources = await _sourceRepository.GetEnabledAsync(cancellationToken);
+        var currentRunDedupKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         var sourcesChecked = 0;
         var articlesFetched = 0;
@@ -50,9 +51,12 @@ public sealed class FetchNewsUseCase
             try
             {
                 fetchedArticles = await _newsFetcher.FetchAsync(source, cancellationToken);
+                source.LastFetchedAt = now;
+                source.LastError = null;
             }
-            catch
+            catch (Exception exception)
             {
+                source.LastError = exception.Message;
                 failedSources++;
                 continue;
             }
@@ -71,16 +75,24 @@ public sealed class FetchNewsUseCase
                 }
 
                 var article = CreateArticle(source, fetchedArticle, now);
-                var deduplicationKey = _normalizationService.BuildKey(article);
 
-                var duplicate = await _articleRepository.FindDuplicateAsync(deduplicationKey, cancellationToken);
-
-                if (duplicate is not null)
+                if (IsDuplicateInCurrentRun(article, currentRunDedupKeys))
                 {
                     duplicateArticles++;
                     continue;
                 }
 
+                var deduplicationKey = _normalizationService.BuildKey(article);
+                var duplicate = await _articleRepository.FindDuplicateAsync(deduplicationKey, cancellationToken);
+
+                if (duplicate is not null)
+                {
+                    RememberArticleKeys(article, currentRunDedupKeys);
+                    duplicateArticles++;
+                    continue;
+                }
+
+                RememberArticleKeys(article, currentRunDedupKeys);
                 await _articleRepository.AddAsync(article, cancellationToken);
                 articlesAdded++;
             }
@@ -117,7 +129,7 @@ public sealed class FetchNewsUseCase
             Description = NormalizeOptionalText(fetchedArticle.Description),
             Content = NormalizeOptionalText(fetchedArticle.Content),
             Language = NormalizeOptionalText(fetchedArticle.Language) ?? source.Language,
-            PublishedAt = fetchedArticle.PublishedAt,
+            PublishedAt = NormalizePublishedAt(fetchedArticle.PublishedAt),
             FetchedAt = now,
             NormalizedTitle = normalizedTitle,
             ContentHash = contentHash,
@@ -127,6 +139,49 @@ public sealed class FetchNewsUseCase
             CreatedAt = now,
             UpdatedAt = now
         };
+    }
+
+    private static bool IsDuplicateInCurrentRun(NewsArticle article, HashSet<string> currentRunDedupKeys)
+    {
+        return BuildRuntimeDedupKeys(article).Any(currentRunDedupKeys.Contains);
+    }
+
+    private static void RememberArticleKeys(NewsArticle article, HashSet<string> currentRunDedupKeys)
+    {
+        foreach (var key in BuildRuntimeDedupKeys(article))
+        {
+            currentRunDedupKeys.Add(key);
+        }
+    }
+
+    private static IEnumerable<string> BuildRuntimeDedupKeys(NewsArticle article)
+    {
+        yield return $"url:{article.Url}";
+
+        if (!string.IsNullOrWhiteSpace(article.CanonicalUrl))
+        {
+            yield return $"canonical:{article.CanonicalUrl}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(article.ContentHash))
+        {
+            yield return $"content:{article.ContentHash}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(article.DedupKey))
+        {
+            yield return $"dedup:{article.DedupKey}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(article.NormalizedTitle))
+        {
+            yield return $"title:{article.NormalizedTitle}";
+        }
+    }
+
+    private static DateTimeOffset? NormalizePublishedAt(DateTimeOffset? value)
+    {
+        return value?.ToUniversalTime();
     }
 
     private static string? NormalizeOptionalText(string? value)

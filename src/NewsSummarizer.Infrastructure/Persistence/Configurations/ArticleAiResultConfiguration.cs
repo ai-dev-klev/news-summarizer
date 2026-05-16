@@ -84,21 +84,6 @@ internal sealed class ArticleAiResultConfiguration : IEntityTypeConfiguration<Ar
 
         builder.HasIndex(x => new { x.ArticleId, x.Provider, x.PromptVersion }).IsUnique();
 
-        builder.ToTable(table =>
-        {
-            table.HasCheckConstraint(
-                "ck_article_ai_results_importance_score_range",
-                "importance_score >= 0 AND importance_score <= 100");
-
-            table.HasCheckConstraint(
-                "ck_article_ai_results_urgency_score_range",
-                "urgency_score >= 0 AND urgency_score <= 100");
-
-            table.HasCheckConstraint(
-                "ck_article_ai_results_opportunity_score_range",
-                "opportunity_score >= 0 AND opportunity_score <= 100");
-        });
-
         builder.HasOne<NewsArticle>()
             .WithMany()
             .HasForeignKey(x => x.ArticleId)

@@ -70,13 +70,16 @@ public sealed class DatabaseSeeder
                 EnabledCategories =
                 [
                     "general",
+                    "world",
+                    "politics",
                     "technology",
                     "business",
                     "sport",
                     "science",
                     "research",
                     "startups",
-                    "market"
+                    "market",
+                    "health"
                 ],
                 UrgentTopics =
                 [
@@ -85,7 +88,7 @@ public sealed class DatabaseSeeder
                     "market_crash",
                     "critical_event"
                 ],
-                ImportantTopicsText = "technology, business, sport, science, research, startups, market, important local events",
+                ImportantTopicsText = "technology, business, sport, science, research, startups, market, politics, world, health, important local events",
                 ExcludedTopicsText = "clickbait",
                 DailyDigestEnabled = true,
                 DailyDigestTime = new TimeOnly(9, 0),
@@ -140,6 +143,36 @@ public sealed class DatabaseSeeder
             new NewsSource
             {
                 Id = Guid.NewGuid(),
+                Name = "BBC News",
+                SourceType = SourceType.Rss,
+                Url = "https://feeds.bbci.co.uk/news/rss.xml",
+                Language = "en",
+                DefaultCategories = ["general", "world", "politics"],
+                IsEnabled = true,
+                IsFastSource = true,
+                FetchIntervalMinutes = 30,
+                TrustScore = 85,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new NewsSource
+            {
+                Id = Guid.NewGuid(),
+                Name = "Reuters Top News",
+                SourceType = SourceType.Rss,
+                Url = "https://feeds.reuters.com/reuters/topNews",
+                Language = "en",
+                DefaultCategories = ["general", "world", "business"],
+                IsEnabled = true,
+                IsFastSource = true,
+                FetchIntervalMinutes = 15,
+                TrustScore = 90,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new NewsSource
+            {
+                Id = Guid.NewGuid(),
                 Name = "ProPublica",
                 SourceType = SourceType.Rss,
                 Url = "https://feeds.propublica.org/propublica/main",
@@ -179,36 +212,6 @@ public sealed class DatabaseSeeder
                 IsFastSource = true,
                 FetchIntervalMinutes = 30,
                 TrustScore = 80,
-                CreatedAt = now,
-                UpdatedAt = now
-            },
-            new NewsSource
-            {
-                Id = Guid.NewGuid(),
-                Name = "BBC News",
-                SourceType = SourceType.Rss,
-                Url = "https://feeds.bbci.co.uk/news/rss.xml",
-                Language = "en",
-                DefaultCategories = ["general", "world", "politics"],
-                IsEnabled = true,
-                IsFastSource = true,
-                FetchIntervalMinutes = 30,
-                TrustScore = 85,
-                CreatedAt = now,
-                UpdatedAt = now
-            },
-            new NewsSource
-            {
-                Id = Guid.NewGuid(),
-                Name = "Reuters Top News",
-                SourceType = SourceType.Rss,
-                Url = "https://feeds.reuters.com/reuters/topNews",
-                Language = "en",
-                DefaultCategories = ["general", "world", "business"],
-                IsEnabled = true,
-                IsFastSource = true,
-                FetchIntervalMinutes = 15,
-                TrustScore = 90,
                 CreatedAt = now,
                 UpdatedAt = now
             },
@@ -277,6 +280,21 @@ public sealed class DatabaseSeeder
             new NewsSource
             {
                 Id = Guid.NewGuid(),
+                Name = "arXiv cs.LG",
+                SourceType = SourceType.Rss,
+                Url = "https://rss.arxiv.org/rss/cs.LG",
+                Language = "en",
+                DefaultCategories = ["research", "technology"],
+                IsEnabled = true,
+                IsFastSource = false,
+                FetchIntervalMinutes = 360,
+                TrustScore = 80,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new NewsSource
+            {
+                Id = Guid.NewGuid(),
                 Name = "ScienceDaily",
                 SourceType = SourceType.Rss,
                 Url = "https://www.sciencedaily.com/rss/all.xml",
@@ -292,6 +310,36 @@ public sealed class DatabaseSeeder
             new NewsSource
             {
                 Id = Guid.NewGuid(),
+                Name = "Phys.org",
+                SourceType = SourceType.Rss,
+                Url = "https://phys.org/rss-feed/",
+                Language = "en",
+                DefaultCategories = ["research", "science", "technology"],
+                IsEnabled = true,
+                IsFastSource = false,
+                FetchIntervalMinutes = 120,
+                TrustScore = 75,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new NewsSource
+            {
+                Id = Guid.NewGuid(),
+                Name = "Nature News",
+                SourceType = SourceType.Rss,
+                Url = "https://www.nature.com/nature.rss",
+                Language = "en",
+                DefaultCategories = ["research", "science"],
+                IsEnabled = true,
+                IsFastSource = false,
+                FetchIntervalMinutes = 120,
+                TrustScore = 85,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new NewsSource
+            {
+                Id = Guid.NewGuid(),
                 Name = "MIT News Research",
                 SourceType = SourceType.Rss,
                 Url = "https://news.mit.edu/rss/research",
@@ -301,6 +349,21 @@ public sealed class DatabaseSeeder
                 IsFastSource = false,
                 FetchIntervalMinutes = 120,
                 TrustScore = 85,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new NewsSource
+            {
+                Id = Guid.NewGuid(),
+                Name = "WIRED Science",
+                SourceType = SourceType.Rss,
+                Url = "https://www.wired.com/feed/category/science/latest/rss",
+                Language = "en",
+                DefaultCategories = ["research", "technology", "science"],
+                IsEnabled = true,
+                IsFastSource = false,
+                FetchIntervalMinutes = 120,
+                TrustScore = 75,
                 CreatedAt = now,
                 UpdatedAt = now
             }

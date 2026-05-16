@@ -37,8 +37,8 @@ public static class DependencyInjection
         string defaultValue)
     {
         var value =
-            configuration[sectionKey] ??
-            Environment.GetEnvironmentVariable(environmentKey);
+            Environment.GetEnvironmentVariable(environmentKey) ??
+            configuration[sectionKey];
 
         return string.IsNullOrWhiteSpace(value)
             ? defaultValue

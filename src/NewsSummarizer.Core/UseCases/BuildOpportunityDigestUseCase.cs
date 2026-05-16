@@ -38,8 +38,8 @@ public sealed class BuildOpportunityDigestUseCase
     public async Task<BuildOpportunityDigestSummary> ExecuteAsync(CancellationToken cancellationToken)
     {
         var now = DateTimeOffset.UtcNow;
-        var periodEnd = now;
-        var periodStart = now.AddDays(-1);
+        var periodStart = new DateTimeOffset(now.UtcDateTime.Date, TimeSpan.Zero);
+        var periodEnd = periodStart.AddDays(1);
 
         return await ExecuteAsync(periodStart, periodEnd, cancellationToken);
     }
@@ -107,6 +107,7 @@ public sealed class BuildOpportunityDigestUseCase
                     preferences)
                 .OrderByDescending(item => item.AiResult.OpportunityScore)
                 .ThenByDescending(item => item.AiResult.ImportanceScore)
+                .ThenByDescending(item => item.Article.PublishedAt ?? item.Article.FetchedAt)
                 .Take(Math.Max(1, preferences.MaxItemsPerDigest))
                 .ToList();
 
