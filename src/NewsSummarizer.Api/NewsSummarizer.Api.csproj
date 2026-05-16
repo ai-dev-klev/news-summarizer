@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NewsSummarizer.Core\NewsSummarizer.Core.csproj" />
+    <ProjectReference Include="..\NewsSummarizer.Infrastructure\NewsSummarizer.Infrastructure.csproj" />
+    <ProjectReference Include="..\NewsSummarizer.Ai\NewsSummarizer.Ai.csproj" />
+    <ProjectReference Include="..\NewsSummarizer.Telegram\NewsSummarizer.Telegram.csproj" />
+  </ItemGroup>
+</Project>

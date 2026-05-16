@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: news-summarizer-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-news_summarizer}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - news_summarizer_pgdata:/var/lib/postgresql/data
+
+volumes:
+  news_summarizer_pgdata:
