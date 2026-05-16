@@ -77,6 +77,14 @@ app.MapPost("/debug/send-urgent-notifications", async (
 
     return Results.Ok(result);
 });
+app.MapPost("/debug/cleanup", async (
+    CleanupExpiredDataUseCase useCase,
+    CancellationToken cancellationToken) =>
+{
+    var result = await useCase.ExecuteAsync(cancellationToken);
+
+    return Results.Ok(result);
+});
 
 app.MapGet("/debug/articles/recent", async (
     NewsSummarizerDbContext dbContext,
