@@ -13,7 +13,7 @@ using System.ClientModel;
 
 namespace NewsSummarizer.Ai.Providers;
 
-public sealed class YandexAiProvider : IAiProvider
+public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
 {
     private readonly YandexChatClientFactory _clientFactory;
     private readonly AiResponseParser _parser;
