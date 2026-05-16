@@ -5,13 +5,14 @@ using NewsSummarizer.Ai.Models;
 using NewsSummarizer.Ai.Parsing;
 using NewsSummarizer.Ai.Prompts;
 using NewsSummarizer.Core.Entities;
+using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
 using NewsSummarizer.Core.Models;
 using OpenAI.Chat;
 
 namespace NewsSummarizer.Ai.Providers;
 
-public sealed class YandexAiProvider : IAiProvider
+public sealed class YandexAiProvider : IAiProvider, IAiProviderInfo
 {
     private readonly YandexChatClientFactory _clientFactory;
     private readonly AiResponseParser _parser;
