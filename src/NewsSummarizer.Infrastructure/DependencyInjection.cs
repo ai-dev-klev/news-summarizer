@@ -18,7 +18,8 @@ public static class DependencyInjection
         services.AddDbContext<NewsSummarizerDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddScoped<IArticleRepository, ArticleRepository>();
-        services.AddScoped<INewsFetcher, MockNewsFetcher>();
+        services.AddHttpClient<RssNewsFetcher>();
+        services.AddScoped<INewsFetcher, RssNewsFetcher>();
 
         return services;
     }
