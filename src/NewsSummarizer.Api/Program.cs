@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NewsSummarizer.Api;
 using NewsSummarizer.Ai;
 using NewsSummarizer.Core;
@@ -293,6 +293,37 @@ app.MapGet("/debug/users", async (
         .ToListAsync(cancellationToken);
 
     return Results.Ok(users);
+});
+
+
+app.MapGet("/debug/embeddings/recent", async (
+    NewsSummarizerDbContext dbContext,
+    CancellationToken cancellationToken,
+    int limit = 20) =>
+{
+    var embeddings = await dbContext.ArticleEmbeddings
+        .OrderByDescending(embedding => embedding.CreatedAt)
+        .Take(limit)
+        .Join(
+            dbContext.NewsArticles,
+            embedding => embedding.ArticleId,
+            article => article.Id,
+            (embedding, article) => new
+            {
+                embedding.ArticleId,
+                ArticleTitle = article.Title,
+                article.Status,
+                article.DuplicateOfArticleId,
+                embedding.Provider,
+                embedding.Model,
+                embedding.Dimensions,
+                embedding.TextHash,
+                embedding.CreatedAt,
+                Preview = embedding.Embedding.Take(8).ToArray()
+            })
+        .ToListAsync(cancellationToken);
+
+    return Results.Ok(embeddings);
 });
 
 app.Run();

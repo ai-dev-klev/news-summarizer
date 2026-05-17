@@ -43,6 +43,7 @@ public sealed class SchemaAndMigrationTests
         Assert.Contains("news_sources", tables);
         Assert.Contains("news_articles", tables);
         Assert.Contains("article_ai_results", tables);
+        Assert.Contains("article_embeddings", tables);
         Assert.Contains("digests", tables);
         Assert.Contains("digest_items", tables);
         Assert.Contains("notifications", tables);

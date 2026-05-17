@@ -10,15 +10,18 @@ public sealed class AnalyzeArticleUseCase
     private readonly IArticleRepository _articleRepository;
     private readonly IArticleAiResultRepository _articleAiResultRepository;
     private readonly IAiProvider _aiProvider;
+    private readonly ISemanticArticleDuplicateDetector? _semanticDuplicateDetector;
 
     public AnalyzeArticleUseCase(
         IArticleRepository articleRepository,
         IArticleAiResultRepository articleAiResultRepository,
-        IAiProvider aiProvider)
+        IAiProvider aiProvider,
+        ISemanticArticleDuplicateDetector? semanticDuplicateDetector = null)
     {
         _articleRepository = articleRepository;
         _articleAiResultRepository = articleAiResultRepository;
         _aiProvider = aiProvider;
+        _semanticDuplicateDetector = semanticDuplicateDetector;
     }
 
     public async Task<AnalyzeArticlesSummary> ExecuteAsync(int limit, CancellationToken cancellationToken)
@@ -29,6 +32,16 @@ public sealed class AnalyzeArticleUseCase
         }
 
         var articles = await _articleRepository.GetPendingAiAsync(limit, cancellationToken);
+
+        if (articles.Count == 0)
+        {
+            // No pending articles still go through SaveChangesAsync for compatibility with existing unit tests.
+            // This also keeps the use case transaction boundary explicit for repository implementations.
+            await _articleRepository.SaveChangesAsync(cancellationToken);
+
+            return new AnalyzeArticlesSummary(0, 0, 0);
+        }
+
         var analyzed = 0;
         var failed = 0;
 
@@ -46,6 +59,10 @@ public sealed class AnalyzeArticleUseCase
                 article.Status = ArticleStatus.Analyzed;
                 article.UpdatedAt = DateTimeOffset.UtcNow;
 
+                await TryApplySemanticDeduplicationAsync(article, cancellationToken);
+
+                await _articleRepository.SaveChangesAsync(cancellationToken);
+
                 analyzed++;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -61,13 +78,43 @@ public sealed class AnalyzeArticleUseCase
                 article.Status = ArticleStatus.Failed;
                 article.UpdatedAt = DateTimeOffset.UtcNow;
 
+                await _articleRepository.SaveChangesAsync(cancellationToken);
+
                 failed++;
             }
         }
 
-        await _articleRepository.SaveChangesAsync(cancellationToken);
-
         return new AnalyzeArticlesSummary(articles.Count, analyzed, failed);
+    }
+
+    private async Task TryApplySemanticDeduplicationAsync(
+        NewsArticle article,
+        CancellationToken cancellationToken)
+    {
+        if (_semanticDuplicateDetector is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await _semanticDuplicateDetector.CheckAndStoreAsync(article, cancellationToken);
+
+            await _articleRepository.SaveChangesAsync(cancellationToken);
+
+            if (!result.IsDuplicate || result.DuplicateOfArticleId is null)
+            {
+                return;
+            }
+
+            article.Status = ArticleStatus.Duplicate;
+            article.DuplicateOfArticleId = result.DuplicateOfArticleId;
+            article.UpdatedAt = DateTimeOffset.UtcNow;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            // Embeddings are optional. A Yandex/fake embeddings failure must not break the core AI analysis pipeline.
+        }
     }
 
     private ArticleAiResult CreateSuccessResult(Guid articleId, ArticleAiAnalysisResult analysis)

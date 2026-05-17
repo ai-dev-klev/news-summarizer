@@ -14,6 +14,7 @@ public sealed class NewsSummarizerDbContext : DbContext
     public DbSet<NewsSource> NewsSources => Set<NewsSource>();
     public DbSet<NewsArticle> NewsArticles => Set<NewsArticle>();
     public DbSet<ArticleAiResult> ArticleAiResults => Set<ArticleAiResult>();
+    public DbSet<ArticleEmbedding> ArticleEmbeddings => Set<ArticleEmbedding>();
     public DbSet<Digest> Digests => Set<Digest>();
     public DbSet<DigestItem> DigestItems => Set<DigestItem>();
     public DbSet<Notification> Notifications => Set<Notification>();
