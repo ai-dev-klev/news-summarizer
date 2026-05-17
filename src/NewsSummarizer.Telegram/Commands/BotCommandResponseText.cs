@@ -5,45 +5,71 @@ public static class BotCommandResponseText
     public static string Welcome()
     {
         return """
-News Summarizer is ready.
+               News Summarizer готов к работе.
 
-Use /help to see available commands.
-""";
+               Я буду помогать получать краткие сводки новостей, срочные уведомления и подборки перспективных новостей для анализа.
+
+               Используй /help, чтобы посмотреть доступные команды.
+               """;
     }
 
     public static string StatusPlaceholder()
     {
         return """
-Status command is available, but runtime status is not connected yet.
-""";
+               Команда /status доступна.
+
+               Подключение реального статуса сервиса будет добавлено позже.
+               """;
     }
 
     public static string DigestPlaceholder()
     {
         return """
-Digest command is available, but digest loading is not connected yet.
-""";
+               Команда /digest доступна.
+
+               Загрузка последнего ежедневного дайджеста будет подключена позже.
+               """;
     }
 
     public static string OpportunitiesPlaceholder()
     {
         return """
-Opportunities command is available, but opportunity digest loading is not connected yet.
-""";
+               Команда /opportunities доступна.
+
+               Загрузка дайджеста перспективных новостей будет подключена позже.
+               """;
     }
 
     public static string AnalyzeUsage()
     {
-        return "Usage: /analyze <articleId>";
+        return """
+               Использование команды:
+
+               /analyze <articleId>
+
+               Пример:
+
+               /analyze 00000000-0000-0000-0000-000000000000
+               """;
     }
 
     public static string AnalyzePlaceholder(string articleId)
     {
-        return $"Detailed analysis command is available for article {articleId}, but AI analysis execution is not connected yet.";
+        return $"""
+                Команда подробного анализа доступна.
+
+                ArticleId: {articleId}
+
+                Запуск реального AI-анализа будет подключён позже.
+                """;
     }
 
     public static string UnknownCommand()
     {
-        return "Unknown command. Use /help to see available commands.";
+        return """
+               Неизвестная команда.
+
+               Используй /help, чтобы посмотреть список доступных команд.
+               """;
     }
 }
