@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NewsSummarizer.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,13 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NewsSummarizer.Infrastructure.Migrations
 {
     [DbContext(typeof(NewsSummarizerDbContext))]
-    partial class NewsSummarizerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260516163327_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.16")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -161,65 +164,6 @@ namespace NewsSummarizer.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_article_ai_results_urgency_score_range", "urgency_score >= 0 AND urgency_score <= 100");
                         });
-                });
-
-            modelBuilder.Entity("NewsSummarizer.Core.Entities.ArticleEmbedding", b =>
-                {
-                    b.Property<Guid>("ArticleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("article_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("Dimensions")
-                        .HasColumnType("integer")
-                        .HasColumnName("dimensions");
-
-                    b.PrimitiveCollection<float[]>("Embedding")
-                        .IsRequired()
-                        .HasColumnType("real[]")
-                        .HasColumnName("embedding");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("model");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("provider");
-
-                    b.Property<string>("TextHash")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("text_hash");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("ArticleId")
-                        .HasName("pk_article_embeddings");
-
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("ix_article_embeddings_created_at");
-
-                    b.HasIndex("Model")
-                        .HasDatabaseName("ix_article_embeddings_model");
-
-                    b.HasIndex("Provider")
-                        .HasDatabaseName("ix_article_embeddings_provider");
-
-                    b.HasIndex("TextHash")
-                        .HasDatabaseName("ix_article_embeddings_text_hash");
-
-                    b.ToTable("article_embeddings", (string)null);
                 });
 
             modelBuilder.Entity("NewsSummarizer.Core.Entities.DetailedAnalysis", b =>
@@ -887,16 +831,6 @@ namespace NewsSummarizer.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_article_ai_results_news_articles_article_id");
-                });
-
-            modelBuilder.Entity("NewsSummarizer.Core.Entities.ArticleEmbedding", b =>
-                {
-                    b.HasOne("NewsSummarizer.Core.Entities.NewsArticle", null)
-                        .WithMany()
-                        .HasForeignKey("ArticleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_article_embeddings_news_articles_article_id");
                 });
 
             modelBuilder.Entity("NewsSummarizer.Core.Entities.DetailedAnalysis", b =>

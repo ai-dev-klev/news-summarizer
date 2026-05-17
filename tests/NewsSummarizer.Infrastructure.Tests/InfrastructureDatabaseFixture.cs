@@ -52,6 +52,7 @@ public sealed class InfrastructureDatabaseFixture : IAsyncLifetime
         await context.Database.ExecuteSqlRawAsync(
             """
             TRUNCATE TABLE
+                article_embeddings,
                 article_ai_results,
                 detailed_analyses,
                 digest_items,

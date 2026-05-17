@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<DatabaseSeeder>();
 
         services.AddScoped<IArticleRepository, ArticleRepository>();
+        services.AddScoped<IArticleEmbeddingRepository, ArticleEmbeddingRepository>();
         services.AddScoped<INewsSourceRepository, NewsSourceRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserPreferencesRepository, UserPreferencesRepository>();
