@@ -24,23 +24,69 @@ public sealed class AiResponseParser
                 throw new InvalidOperationException("AI response JSON root must be an object.");
             }
 
+            var summary = ReadStringOrDefault(root, "summary", "No summary provided.");
+            var reason = ReadStringOrDefault(root, "reason", "No reason provided.");
+
             return new ArticleAiAnalysisResult(
-                Category: ReadRequiredString(root, "category", json),
+                Category: ReadStringOrDefault(root, "category", "other"),
                 ImportanceScore: ReadScore(root, "importanceScore", json),
                 UrgencyScore: ReadScore(root, "urgencyScore", json),
                 OpportunityScore: ReadScore(root, "opportunityScore", json),
-                Summary: ReadRequiredString(root, "summary", json),
-                Reason: ReadRequiredString(root, "reason", json),
-                OpportunityReason: ReadRequiredString(root, "opportunityReason", json),
-                DailyDigestCandidate: ReadRequiredBoolean(root, "dailyDigestCandidate", json),
-                OpportunityDigestCandidate: ReadRequiredBoolean(root, "opportunityDigestCandidate", json),
-                UrgentCandidate: ReadRequiredBoolean(root, "urgentCandidate", json),
+                Summary: summary,
+                Reason: reason,
+                OpportunityReason: ReadStringOrDefault(root, "opportunityReason", reason),
+                DailyDigestCandidate: ReadBooleanOrDefault(root, "dailyDigestCandidate", false),
+                OpportunityDigestCandidate: ReadBooleanOrDefault(root, "opportunityDigestCandidate", false),
+                UrgentCandidate: ReadBooleanOrDefault(root, "urgentCandidate", false),
                 RawResponseJson: json);
         }
         catch (JsonException exception)
         {
             throw new InvalidOperationException($"AI response is not valid JSON. Raw response: {rawResponse}", exception);
         }
+    }
+    
+    private static string ReadStringOrDefault(JsonElement root, string propertyName, string fallback)
+    {
+        if (!root.TryGetProperty(propertyName, out var element))
+        {
+            return fallback;
+        }
+
+        if (element.ValueKind != JsonValueKind.String)
+        {
+            return fallback;
+        }
+
+        var value = element.GetString()?.Trim();
+
+        return string.IsNullOrWhiteSpace(value) ? fallback : value;
+    }
+
+    private static bool ReadBooleanOrDefault(JsonElement root, string propertyName, bool fallback)
+    {
+        if (!root.TryGetProperty(propertyName, out var element))
+        {
+            return fallback;
+        }
+
+        if (element.ValueKind == JsonValueKind.True)
+        {
+            return true;
+        }
+
+        if (element.ValueKind == JsonValueKind.False)
+        {
+            return false;
+        }
+
+        if (element.ValueKind == JsonValueKind.String &&
+            bool.TryParse(element.GetString(), out var parsed))
+        {
+            return parsed;
+        }
+
+        return fallback;
     }
 
     private static string ExtractJsonObject(string rawResponse)
@@ -151,13 +197,21 @@ public sealed class AiResponseParser
         {
             value = number;
         }
+        else if (element.ValueKind == JsonValueKind.Number && element.TryGetDouble(out var doubleNumber))
+        {
+            value = (int)Math.Round(doubleNumber);
+        }
         else if (element.ValueKind == JsonValueKind.String && int.TryParse(element.GetString(), out var parsed))
         {
             value = parsed;
         }
+        else if (element.ValueKind == JsonValueKind.String && double.TryParse(element.GetString(), out var parsedDouble))
+        {
+            value = (int)Math.Round(parsedDouble);
+        }
         else
         {
-            throw new InvalidOperationException($"AI response property '{propertyName}' must be an integer. Raw JSON: {rawJson}");
+            throw new InvalidOperationException($"AI response property '{propertyName}' must be a number. Raw JSON: {rawJson}");
         }
 
         return Math.Clamp(value, 0, 100);
