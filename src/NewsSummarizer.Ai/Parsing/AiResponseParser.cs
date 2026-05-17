@@ -201,13 +201,30 @@ public sealed class AiResponseParser
         {
             value = (int)Math.Round(doubleNumber);
         }
-        else if (element.ValueKind == JsonValueKind.String && int.TryParse(element.GetString(), out var parsed))
+        else if (element.ValueKind == JsonValueKind.String)
         {
-            value = parsed;
-        }
-        else if (element.ValueKind == JsonValueKind.String && double.TryParse(element.GetString(), out var parsedDouble))
-        {
-            value = (int)Math.Round(parsedDouble);
+            var text = element.GetString();
+
+            if (int.TryParse(
+                    text,
+                    System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var parsedInteger))
+            {
+                value = parsedInteger;
+            }
+            else if (double.TryParse(
+                         text,
+                         System.Globalization.NumberStyles.Float,
+                         System.Globalization.CultureInfo.InvariantCulture,
+                         out var parsedDouble))
+            {
+                value = (int)Math.Round(parsedDouble);
+            }
+            else
+            {
+                throw new InvalidOperationException($"AI response property '{propertyName}' must be a number. Raw JSON: {rawJson}");
+            }
         }
         else
         {
