@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using NewsSummarizer.Core.Entities;
 using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
@@ -133,7 +133,7 @@ public sealed class SendUrgentNotificationsUseCase
                     NotificationType = NotificationType.Urgent,
                     DedupKey = notificationDedupKey,
                     Status = NotificationStatus.Pending,
-                    TitleSnapshot = $"Urgent: {article.Title}",
+                    TitleSnapshot = $"Срочно: {article.Title}",
                     MessageSnapshot = BuildUrgentMessage(article, aiResult),
                     ExpiresAt = _retentionPolicyService.GetNotificationExpiresAt(now),
                     CreatedAt = now
@@ -247,23 +247,23 @@ public sealed class SendUrgentNotificationsUseCase
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"Urgent: {article.Title}");
+        builder.AppendLine($"Срочно: {article.Title}");
 
         if (!string.IsNullOrWhiteSpace(aiResult.Summary))
         {
             builder.AppendLine();
-            builder.AppendLine($"Summary: {aiResult.Summary}");
+            builder.AppendLine($"Кратко: {aiResult.Summary}");
         }
 
         if (!string.IsNullOrWhiteSpace(aiResult.Reason))
         {
             builder.AppendLine();
-            builder.AppendLine($"Why urgent: {aiResult.Reason}");
+            builder.AppendLine($"Почему срочно: {aiResult.Reason}");
         }
 
         builder.AppendLine();
-        builder.AppendLine($"Urgency score: {aiResult.UrgencyScore}");
-        builder.AppendLine($"Url: {article.Url}");
+        builder.AppendLine($"Оценка срочности: {aiResult.UrgencyScore}/100");
+        builder.AppendLine($"Ссылка: {article.Url}");
 
         return builder.ToString();
     }

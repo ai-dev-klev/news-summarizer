@@ -18,12 +18,13 @@ public static class BotCommandResponseText
                 На экране должна появиться клавиатура с кнопками:
                 /digest
                 /opportunities
-                /status
+                /settings
                 /help
 
                 Доступные команды:
                 /digest — ежедневная сводка
                 /opportunities — сводка возможностей
+                /settings — настройки
                 /analyze <articleId> — подробный анализ новости
                 /help — помощь
                 """;

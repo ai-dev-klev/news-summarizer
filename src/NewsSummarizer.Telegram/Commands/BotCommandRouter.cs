@@ -8,10 +8,14 @@ public sealed class BotCommandRouter
         {
             BotCommandType.Help => BotCommandHelpText.Build(),
             BotCommandType.Analyze => RouteAnalyze(command),
-            BotCommandType.Start => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /start Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
-            BotCommandType.Status => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /status Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
-            BotCommandType.Digest => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /digest Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
-            BotCommandType.Opportunities => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /opportunities Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
+            BotCommandType.Start => "Команда /start обрабатывается TelegramCommandService.",
+            BotCommandType.Status => "Команда /status обрабатывается TelegramCommandService.",
+            BotCommandType.Digest => "Команда /digest обрабатывается TelegramCommandService.",
+            BotCommandType.Opportunities => "Команда /opportunities обрабатывается TelegramCommandService.",
+            BotCommandType.Settings => "Команда /settings обрабатывается TelegramCommandService.",
+            BotCommandType.Categories => "Команда /categories обрабатывается TelegramCommandService.",
+            BotCommandType.UrgentTopics => "Команда /urgent_topics обрабатывается TelegramCommandService.",
+            BotCommandType.MaxItems => "Команда /max_items обрабатывается TelegramCommandService.",
             _ => BotCommandResponseText.UnknownCommand()
         };
     }
@@ -25,6 +29,6 @@ public sealed class BotCommandRouter
             return BotCommandResponseText.AnalyzeUsage();
         }
 
-        return "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /analyze Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.";
+        return "Команда /analyze обрабатывается TelegramCommandService.";
     }
 }

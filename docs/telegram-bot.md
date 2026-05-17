@@ -1,4 +1,4 @@
-# Telegram bot
+﻿# Telegram bot
 
 Telegram bot is enabled when `TELEGRAM_BOT_TOKEN` is configured.
 
@@ -31,7 +31,32 @@ TELEGRAM_BOT_TOKEN=...
 /status
 /digest
 /opportunities
+/settings
 /analyze <articleId>
+```
+
+## User settings commands
+
+```text
+/settings
+/categories technology business science
+/categories технологии бизнес наука
+/urgent_topics crisis security market
+/urgent_topics кризис безопасность рынок
+/max_items 5
+/daily_on
+/daily_off
+/opportunities_on
+/opportunities_off
+/urgent_on
+/urgent_off
+```
+
+Supported category aliases include:
+
+```text
+general, world, business, technology, science, politics, security, education, health, culture, sports, startups
+общие, мир, бизнес, технологии, наука, политика, безопасность, образование, здоровье, культура, спорт, стартапы
 ```
 
 ## Buttons
@@ -41,7 +66,7 @@ The bot sends a persistent reply keyboard with these buttons:
 ```text
 /digest
 /opportunities
-/status
+/settings
 /help
 ```
 
@@ -84,6 +109,7 @@ Then use Telegram:
 
 ```text
 /start
+/settings
 /digest
 /opportunities
 /analyze <articleId>

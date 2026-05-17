@@ -66,6 +66,7 @@ public sealed class TelegramBotApiClient
                 new { command = "status", description = "Показать статус профиля" },
                 new { command = "digest", description = "Показать ежедневную сводку" },
                 new { command = "opportunities", description = "Показать сводку возможностей" },
+                new { command = "settings", description = "Показать настройки" },
                 new { command = "analyze", description = "Подробный AI-анализ: /analyze <articleId>" }
             }
         };
@@ -181,7 +182,7 @@ public sealed class TelegramBotApiClient
                 },
                 new[]
                 {
-                    new { text = "/status" },
+                    new { text = "/settings" },
                     new { text = "/help" }
                 }
             },

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using NewsSummarizer.Core.Entities;
 using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
@@ -167,7 +167,7 @@ public sealed class BuildDailyDigestUseCase
                     NotificationType = NotificationType.DailyDigest,
                     DedupKey = notificationDedupKey,
                     Status = NotificationStatus.Pending,
-                    TitleSnapshot = "Daily digest",
+                    TitleSnapshot = "Ежедневная сводка",
                     MessageSnapshot = BuildDigestMessage(selectedItems),
                     ExpiresAt = _retentionPolicyService.GetNotificationExpiresAt(DateTimeOffset.UtcNow),
                     CreatedAt = DateTimeOffset.UtcNow
@@ -260,7 +260,7 @@ public sealed class BuildDailyDigestUseCase
     private static string BuildDigestMessage(IReadOnlyList<SelectedDailyDigestItem> items)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("Daily digest");
+        builder.AppendLine("Ежедневная сводка");
 
         for (var i = 0; i < items.Count; i++)
         {
@@ -271,15 +271,15 @@ public sealed class BuildDailyDigestUseCase
 
             if (!string.IsNullOrWhiteSpace(item.AiResult.Summary))
             {
-                builder.AppendLine($"Summary: {item.AiResult.Summary}");
+                builder.AppendLine($"Кратко: {item.AiResult.Summary}");
             }
 
             if (!string.IsNullOrWhiteSpace(item.AiResult.Reason))
             {
-                builder.AppendLine($"Reason: {item.AiResult.Reason}");
+                builder.AppendLine($"Почему важно: {item.AiResult.Reason}");
             }
 
-            builder.AppendLine($"Url: {item.Article.Url}");
+            builder.AppendLine($"Ссылка: {item.Article.Url}");
         }
 
         return builder.ToString();

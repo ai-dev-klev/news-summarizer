@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using NewsSummarizer.Core.Entities;
 using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
@@ -168,7 +168,7 @@ public sealed class BuildOpportunityDigestUseCase
                     NotificationType = NotificationType.OpportunityDigest,
                     DedupKey = notificationDedupKey,
                     Status = NotificationStatus.Pending,
-                    TitleSnapshot = "Opportunity digest",
+                    TitleSnapshot = "Сводка возможностей",
                     MessageSnapshot = BuildDigestMessage(selectedItems),
                     ExpiresAt = _retentionPolicyService.GetNotificationExpiresAt(DateTimeOffset.UtcNow),
                     CreatedAt = DateTimeOffset.UtcNow
@@ -261,7 +261,7 @@ public sealed class BuildOpportunityDigestUseCase
     private static string BuildDigestMessage(IReadOnlyList<SelectedOpportunityDigestItem> items)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("Opportunity digest");
+        builder.AppendLine("Сводка возможностей");
 
         for (var i = 0; i < items.Count; i++)
         {
@@ -272,19 +272,19 @@ public sealed class BuildOpportunityDigestUseCase
 
             if (!string.IsNullOrWhiteSpace(item.AiResult.Summary))
             {
-                builder.AppendLine($"Summary: {item.AiResult.Summary}");
+                builder.AppendLine($"Кратко: {item.AiResult.Summary}");
             }
 
             if (!string.IsNullOrWhiteSpace(item.AiResult.OpportunityReason))
             {
-                builder.AppendLine($"Opportunity: {item.AiResult.OpportunityReason}");
+                builder.AppendLine($"Возможность: {item.AiResult.OpportunityReason}");
             }
             else if (!string.IsNullOrWhiteSpace(item.AiResult.Reason))
             {
-                builder.AppendLine($"Reason: {item.AiResult.Reason}");
+                builder.AppendLine($"Почему важно: {item.AiResult.Reason}");
             }
 
-            builder.AppendLine($"Url: {item.Article.Url}");
+            builder.AppendLine($"Ссылка: {item.Article.Url}");
         }
 
         return builder.ToString();

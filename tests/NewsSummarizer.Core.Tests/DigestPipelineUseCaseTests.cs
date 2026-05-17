@@ -1,4 +1,4 @@
-using NewsSummarizer.Core.Entities;
+﻿using NewsSummarizer.Core.Entities;
 using NewsSummarizer.Core.Enums;
 using NewsSummarizer.Core.Interfaces;
 using NewsSummarizer.Core.Models;
@@ -83,7 +83,7 @@ public sealed class DigestPipelineUseCaseTests
         Assert.Equal(NotificationStatus.Pending, notification.Status);
         Assert.Equal(digest.Id, notification.DigestId);
         Assert.Null(notification.ArticleId);
-        Assert.Contains("Daily", notification.TitleSnapshot);
+        Assert.Contains("Ежедневная сводка", notification.TitleSnapshot);
         Assert.Contains(matchingArticle.Title, notification.MessageSnapshot);
         Assert.Contains(matchingArticle.Url, notification.MessageSnapshot);
 
@@ -276,7 +276,7 @@ public sealed class DigestPipelineUseCaseTests
         var notification = Assert.Single(context.NotificationRepository.AddedNotifications);
         Assert.Equal(NotificationType.OpportunityDigest, notification.NotificationType);
         Assert.Equal(digest.Id, notification.DigestId);
-        Assert.Contains("Opportunity", notification.TitleSnapshot);
+        Assert.Contains("Сводка возможностей", notification.TitleSnapshot);
         Assert.Contains(article.Title, notification.MessageSnapshot);
         Assert.NotNull(aiResult.OpportunityReason);
         Assert.Contains(aiResult.OpportunityReason!, notification.MessageSnapshot);

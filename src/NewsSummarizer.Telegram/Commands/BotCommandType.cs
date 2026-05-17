@@ -8,5 +8,15 @@ public enum BotCommandType
     Status,
     Digest,
     Opportunities,
-    Analyze
+    Analyze,
+    Settings,
+    Categories,
+    UrgentTopics,
+    DailyOn,
+    DailyOff,
+    OpportunitiesOn,
+    OpportunitiesOff,
+    UrgentOn,
+    UrgentOff,
+    MaxItems
 }
