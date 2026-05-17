@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Xml.Linq;
 using NewsSummarizer.Core.Entities;
 using NewsSummarizer.Core.Enums;
@@ -36,6 +36,10 @@ public sealed class RssNewsFetcher : INewsFetcher
         try
         {
             xml = await _httpClient.GetStringAsync(source.Url, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception exception)
         {
