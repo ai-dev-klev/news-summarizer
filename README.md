@@ -6,6 +6,19 @@
 
 https://t.me/ai_dev_klev_bot
 
+## Содержание
+
+- [Проблема](#проблема)
+- [Решение](#решение)
+- [Целевой пользователь](#целевой-пользователь)
+- [Что реализовано](#что-реализовано)
+- [Как используется Yandex AI Studio / Алиса AI](#как-используется-yandex-ai-studio--алиса-ai)
+- [Технологии](#технологии)
+- [Быстрый запуск](#быстрый-запуск)
+- [Документация](#документация)
+- [Ограничения MVP](#ограничения-mvp)
+- [Дальнейшее развитие](#дальнейшее-развитие)
+
 ## Проблема
 
 Пользователь получает слишком много новостей из разных источников. Большая часть потока повторяется, плохо структурирована и не отвечает на вопрос: «что действительно важно именно для меня?»
@@ -43,19 +56,19 @@ RSS / mock sources
   - краткое summary;
   - причина попадания в дайджест.
 - Подробный AI-анализ отдельной новости по команде `/analyze`.
-- Опциональные Yandex Embeddings для семантической дедупликации похожих новостей.
+- Yandex Embeddings для семантической дедупликации похожих новостей.
 - Worker pipeline для автоматического выполнения фоновых задач.
 - Debug API для локальной демонстрации MVP-сценария.
 
 ## Как используется Yandex AI Studio / Алиса AI
 
-AI в проекте не является обычным чатом. Он встроен в продуктовый pipeline:
+AI встроен в pipeline обработки данных, а не используется как свободный чат:
 
-1. **Структурирует новость** — возвращает JSON с категорией, важностью, срочностью и summary.
-2. **Помогает принимать решение** — определяет, попадёт ли новость в ежедневную сводку, сводку возможностей или срочное уведомление.
-3. **Генерирует объяснение** — пишет, почему новость важна для пользователя.
-4. **Делает подробный анализ** — по запросу пользователя объясняет событие, последствия, риски и возможные гипотезы.
-5. **Семантически сравнивает новости** — embeddings помогают находить новости об одном событии, написанные разными словами.
+1. Анализирует новость и возвращает JSON с категорией, важностью, срочностью и summary.
+2. Определяет, попадёт ли новость в ежедневную сводку, сводку возможностей или срочное уведомление.
+3. Пишет, почему новость важна для пользователя.
+4. По команде `/analyze` объясняет событие, последствия, риски и возможные гипотезы.
+5. Через embeddings находит новости об одном событии, написанные разными словами.
 
 ## Технологии
 
@@ -71,35 +84,25 @@ AI в проекте не является обычным чатом. Он вс�
 
 ## Быстрый запуск
 
-### 1. Подготовить окружение
+**Нужно:** .NET SDK 9, Docker (для PostgreSQL), `dotnet-ef` (`dotnet tool install --global dotnet-ef`).
+
+### 1. Скопировать `.env` и заполнить ключи
 
 ```bash
 cp .env.example .env
 ```
 
-Заполнить `.env` своими ключами. Не коммитить `.env` в Git.
-
-Минимально для mock-режима:
+Открыть `.env` и задать три значения:
 
 ```env
-NEWS_FETCHING_PROVIDER=Mock
-AI_PROVIDER=Mock
-TELEGRAM_BOT_TOKEN=<telegram_bot_token>
+TELEGRAM_BOT_TOKEN=        # токен от @BotFather → /newbot
+YANDEX_AI_API_KEY=         # API-ключ сервисного аккаунта в Yandex Cloud
+YANDEX_AI_FOLDER_ID=       # ID каталога Yandex Cloud (формат: b1g...)
 ```
 
-Для реального AI:
+Остальные параметры в `.env.example` уже содержат рабочие значения по умолчанию.
 
-```env
-NEWS_FETCHING_PROVIDER=Rss
-AI_PROVIDER=Yandex
-YANDEX_AI_API_KEY=<yandex_api_key>
-YANDEX_AI_FOLDER_ID=<yandex_folder_id>
-YANDEX_AI_BASE_URL=https://ai.api.cloud.yandex.net/v1
-YANDEX_AI_MODEL=yandexgpt/latest
-YANDEX_AI_PROMPT_VERSION=v1
-```
-
-### 2. Запустить PostgreSQL
+### 2. Поднять базу данных
 
 ```bash
 docker compose up -d
@@ -113,32 +116,29 @@ dotnet ef database update \
   --startup-project src/NewsSummarizer.Api
 ```
 
-### 4. Запустить API
+### 4. Запустить API и Worker
 
+Терминал 1:
 ```bash
 dotnet run --project src/NewsSummarizer.Api
 ```
 
-### 5. Запустить Worker
-
-В отдельном терминале:
-
+Терминал 2:
 ```bash
 dotnet run --project src/NewsSummarizer.Worker
 ```
 
-## Локальная проверка через Debug API
+### 5. Проверить
 
 ```bash
 curl -X POST http://localhost:5000/debug/seed
 curl -X POST http://localhost:5000/debug/fetch-news
 curl -X POST "http://localhost:5000/debug/analyze-articles?limit=20"
 curl -X POST http://localhost:5000/debug/build-daily-digests
-curl -X POST http://localhost:5000/debug/build-opportunity-digests
 curl http://localhost:5000/debug/digests/recent
 ```
 
-Если порт отличается, взять актуальный адрес из логов `dotnet run`.
+Актуальный порт — в логах `dotnet run` в строке `Now listening on: ...`.
 
 ## Документация
 
