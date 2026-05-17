@@ -227,8 +227,26 @@ public sealed class BuildOpportunityDigestUseCase
             return true;
         }
 
-        return preferences.EnabledCategories.Any(category =>
-            string.Equals(category, aiResult.Category, StringComparison.OrdinalIgnoreCase));
+        var articleCategory = NormalizeCategory(aiResult.Category);
+
+        return preferences.EnabledCategories
+            .Where(category => !string.IsNullOrWhiteSpace(category))
+            .Select(NormalizeCategory)
+            .Any(category => string.Equals(category, articleCategory, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizeCategory(string category)
+    {
+        var normalized = category.Trim().ToLowerInvariant();
+
+        return normalized switch
+        {
+            "sport" => "sports",
+            "startup" => "startups",
+            "tech" => "technology",
+            "ai" => "technology",
+            _ => normalized
+        };
     }
 
     private static string BuildNotificationDedupKey(
