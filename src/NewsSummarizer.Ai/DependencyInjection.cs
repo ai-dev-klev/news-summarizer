@@ -82,10 +82,7 @@ public static class DependencyInjection
                 options.MaxOutputTokens = 800;
             }
         });
-
-
-        // <auto-added: yandex-embeddings-semantic-dedup>
-        services.Configure<EmbeddingProviderOptions>(configuration.GetSection("Embeddings"));
+services.Configure<EmbeddingProviderOptions>(configuration.GetSection("Embeddings"));
         services.Configure<EmbeddingProviderOptions>(configuration.GetSection("YandexAi:Embeddings"));
         services.Configure<EmbeddingProviderOptions>(configuration.GetSection("AiProvider:Embeddings"));
 
@@ -211,9 +208,7 @@ public static class DependencyInjection
                 serviceProvider.GetRequiredService<IArticleEmbeddingRepository>(),
                 options);
         });
-        // </auto-added: yandex-embeddings-semantic-dedup>
-
-        services.AddSingleton<AiResponseParser>();
+services.AddSingleton<AiResponseParser>();
         services.AddSingleton<YandexChatClientFactory>();
 
         services.AddScoped<MockAiProvider>();
@@ -230,10 +225,7 @@ public static class DependencyInjection
 
         return services;
     }
-
-
-    // <auto-added: yandex-embeddings-semantic-dedup>
-    private static bool FirstBool(params object?[] values)
+private static bool FirstBool(params object?[] values)
     {
         foreach (var value in values)
         {
@@ -291,9 +283,7 @@ public static class DependencyInjection
 
         return currentValue;
     }
-    // </auto-added: yandex-embeddings-semantic-dedup>
-
-    private static string? FirstNotEmpty(params string?[] values)
+private static string? FirstNotEmpty(params string?[] values)
     {
         foreach (var value in values)
         {

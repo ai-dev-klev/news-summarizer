@@ -8,3 +8,4 @@ obj/
 .env
 appsettings.Development.json
 context/
+.migration_backups/
