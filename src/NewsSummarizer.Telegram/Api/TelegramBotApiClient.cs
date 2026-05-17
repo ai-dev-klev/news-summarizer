@@ -96,7 +96,7 @@ public sealed class TelegramBotApiClient
             offset,
             limit = 20,
             timeout = Math.Max(1, timeoutSeconds),
-            allowed_updates = new[] { "message" }
+            allowed_updates = new[] { "message", "callback_query" }
         };
 
         var result = await PostAsync<List<TelegramUpdate>>(
@@ -115,14 +115,40 @@ public sealed class TelegramBotApiClient
         return SendTextAsync(
             chatId,
             text,
-            includeMainKeyboard: true,
+            replyMarkup: BuildMainReplyKeyboard(),
             cancellationToken);
     }
 
-    public async Task<TelegramSendResult> SendTextAsync(
+    public Task<TelegramSendResult> SendTextAsync(
         long chatId,
         string text,
-        bool includeMainKeyboard,
+        object? replyMarkup,
+        CancellationToken cancellationToken)
+    {
+        return SendTextInternalAsync(
+            chatId,
+            text,
+            replyMarkup,
+            cancellationToken);
+    }
+
+    public Task<TelegramSendResult> SendTextWithoutMarkupAsync(
+        long chatId,
+        string text,
+        CancellationToken cancellationToken)
+    {
+        return SendTextInternalAsync(
+            chatId,
+            text,
+            replyMarkup: null,
+            cancellationToken);
+    }
+
+    public async Task<TelegramSendResult> EditMessageTextAsync(
+        long chatId,
+        int messageId,
+        string text,
+        object? replyMarkup,
         CancellationToken cancellationToken)
     {
         if (!IsConfigured)
@@ -135,20 +161,86 @@ public sealed class TelegramBotApiClient
             return new TelegramSendResult(false, "Telegram message text is empty.");
         }
 
-        object payload = includeMainKeyboard
-            ? new
-            {
-                chat_id = chatId,
-                text,
-                disable_web_page_preview = true,
-                reply_markup = BuildMainReplyKeyboard()
-            }
-            : new
-            {
-                chat_id = chatId,
-                text,
-                disable_web_page_preview = true
-            };
+        var payload = new
+        {
+            chat_id = chatId,
+            message_id = messageId,
+            text,
+            disable_web_page_preview = true,
+            reply_markup = replyMarkup
+        };
+
+        try
+        {
+            await PostAsync<JsonElement>(
+                "editMessageText",
+                payload,
+                cancellationToken);
+
+            return new TelegramSendResult(true);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            return new TelegramSendResult(false, exception.Message);
+        }
+    }
+
+    public async Task AnswerCallbackQueryAsync(
+        string callbackQueryId,
+        string? text,
+        CancellationToken cancellationToken)
+    {
+        if (!IsConfigured || string.IsNullOrWhiteSpace(callbackQueryId))
+        {
+            return;
+        }
+
+        var payload = new
+        {
+            callback_query_id = callbackQueryId,
+            text
+        };
+
+        try
+        {
+            await PostAsync<JsonElement>(
+                "answerCallbackQuery",
+                payload,
+                cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning(exception, "Telegram answerCallbackQuery failed.");
+        }
+    }
+
+    private async Task<TelegramSendResult> SendTextInternalAsync(
+        long chatId,
+        string text,
+        object? replyMarkup,
+        CancellationToken cancellationToken)
+    {
+        if (!IsConfigured)
+        {
+            return new TelegramSendResult(false, "Telegram bot token is not configured.");
+        }
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return new TelegramSendResult(false, "Telegram message text is empty.");
+        }
+
+        var payload = new
+        {
+            chat_id = chatId,
+            text,
+            disable_web_page_preview = true,
+            reply_markup = replyMarkup
+        };
 
         try
         {

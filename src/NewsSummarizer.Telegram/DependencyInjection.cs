@@ -42,6 +42,7 @@ public static class DependencyInjection
 
         services.AddSingleton<BotCommandParser>();
         services.AddSingleton<BotCommandRouter>();
+        services.AddSingleton<SettingsKeyboardFactory>();
         services.AddSingleton<TelegramMessageChunker>();
         services.AddSingleton<DigestMessageFormatter>();
         services.AddSingleton<DetailedAnalysisFormatter>();

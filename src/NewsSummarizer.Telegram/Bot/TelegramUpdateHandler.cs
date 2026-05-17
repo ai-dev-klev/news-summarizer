@@ -32,6 +32,12 @@ public sealed class TelegramUpdateHandler
         TelegramUpdate update,
         CancellationToken cancellationToken)
     {
+        if (update.CallbackQuery is not null)
+        {
+            await HandleCallbackAsync(update, cancellationToken);
+            return;
+        }
+
         var message = update.Message;
 
         if (message?.Text is null)
@@ -60,7 +66,87 @@ public sealed class TelegramUpdateHandler
             userSnapshot,
             cancellationToken);
 
-        foreach (var chunk in _messageChunker.Split(response))
+        await SendResponseAsync(chatId, response, cancellationToken);
+    }
+
+    private async Task HandleCallbackAsync(
+        TelegramUpdate update,
+        CancellationToken cancellationToken)
+    {
+        var callback = update.CallbackQuery!;
+
+        var chatId = callback.Message?.Chat.Id ?? callback.From.Id;
+        var messageId = callback.Message?.MessageId;
+
+        var userSnapshot = new TelegramUserSnapshot(
+            callback.From.Id,
+            callback.From.Username,
+            callback.From.FirstName);
+
+        _logger.LogInformation(
+            "Handling Telegram callback. UpdateId: {UpdateId}, ChatId: {ChatId}, Data: {CallbackData}",
+            update.UpdateId,
+            chatId,
+            callback.Data);
+
+        var response = await _commandService.HandleCallbackAsync(
+            callback.Data,
+            userSnapshot,
+            cancellationToken);
+
+        await _botApiClient.AnswerCallbackQueryAsync(
+            callback.Id,
+            response.CallbackAnswerText,
+            cancellationToken);
+
+        if (messageId is not null)
+        {
+            var editResult = await _botApiClient.EditMessageTextAsync(
+                chatId,
+                messageId.Value,
+                response.Text,
+                response.ReplyMarkup,
+                cancellationToken);
+
+            if (editResult.Success)
+            {
+                return;
+            }
+
+            _logger.LogWarning(
+                "Failed to edit Telegram settings message. ChatId: {ChatId}, Error: {Error}",
+                chatId,
+                editResult.ErrorMessage);
+        }
+
+        await SendResponseAsync(chatId, response, cancellationToken);
+    }
+
+    private async Task SendResponseAsync(
+        long chatId,
+        TelegramCommandResult response,
+        CancellationToken cancellationToken)
+    {
+        if (response.ReplyMarkup is not null)
+        {
+            var sendResult = await _botApiClient.SendTextAsync(
+                chatId,
+                response.Text,
+                response.ReplyMarkup,
+                cancellationToken);
+
+            if (!sendResult.Success)
+            {
+                _logger.LogWarning(
+                    "Failed to send Telegram command response. ChatId: {ChatId}, Error: {Error}",
+                    chatId,
+                    sendResult.ErrorMessage);
+            }
+
+            return;
+        }
+
+        foreach (var chunk in _messageChunker.Split(response.Text))
         {
             var sendResult = await _botApiClient.SendTextAsync(
                 chatId,

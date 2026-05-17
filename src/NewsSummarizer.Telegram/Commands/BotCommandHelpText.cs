@@ -16,19 +16,12 @@ public static class BotCommandHelpText
                /analyze <articleId> — сделать подробный AI-анализ новости
 
                Настройки:
-               /settings — показать текущие настройки
-               /categories <темы> — выбрать категории через пробел или запятую
-               /urgent_topics <темы> — выбрать темы для срочных уведомлений
+               /settings — открыть настройки с кнопками
+               /categories <темы> — выбрать категории текстом
+               /urgent_topics <темы> — выбрать темы для срочных уведомлений текстом
                /max_items <число> — ограничить размер сводки, от 1 до 20
-               /daily_on или /daily_off — включить или выключить ежедневную сводку
-               /opportunities_on или /opportunities_off — включить или выключить сводку возможностей
-               /urgent_on или /urgent_off — включить или выключить срочные уведомления
 
-               Примеры:
-               /categories technology business science
-               /categories технологии бизнес наука
-               /urgent_topics crisis security market
-               /max_items 5
+               Для удобства используй /settings: там категории и срочные темы можно отмечать кнопками.
                """;
     }
 }

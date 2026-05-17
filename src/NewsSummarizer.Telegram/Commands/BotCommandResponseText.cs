@@ -15,12 +15,6 @@ public static class BotCommandResponseText
 
                 Я news-summarizer bot. Я показываю краткие новостные сводки, возможности для анализа и срочные уведомления.
 
-                На экране должна появиться клавиатура с кнопками:
-                /digest
-                /opportunities
-                /settings
-                /help
-
                 Доступные команды:
                 /digest — ежедневная сводка
                 /opportunities — сводка возможностей

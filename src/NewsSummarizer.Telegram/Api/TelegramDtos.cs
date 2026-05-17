@@ -9,6 +9,24 @@ public sealed class TelegramUpdate
 
     [JsonPropertyName("message")]
     public TelegramMessage? Message { get; set; }
+
+    [JsonPropertyName("callback_query")]
+    public TelegramCallbackQuery? CallbackQuery { get; set; }
+}
+
+public sealed class TelegramCallbackQuery
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("from")]
+    public TelegramUser From { get; set; } = new();
+
+    [JsonPropertyName("message")]
+    public TelegramMessage? Message { get; set; }
+
+    [JsonPropertyName("data")]
+    public string? Data { get; set; }
 }
 
 public sealed class TelegramMessage
@@ -48,6 +66,21 @@ public sealed class TelegramChat
 
     [JsonPropertyName("type")]
     public string? Type { get; set; }
+}
+
+public sealed class TelegramInlineKeyboardMarkup
+{
+    [JsonPropertyName("inline_keyboard")]
+    public IReadOnlyList<IReadOnlyList<TelegramInlineKeyboardButton>> InlineKeyboard { get; init; } = [];
+}
+
+public sealed class TelegramInlineKeyboardButton
+{
+    [JsonPropertyName("text")]
+    public string Text { get; init; } = string.Empty;
+
+    [JsonPropertyName("callback_data")]
+    public string CallbackData { get; init; } = string.Empty;
 }
 
 internal sealed class TelegramApiEnvelope<T>
