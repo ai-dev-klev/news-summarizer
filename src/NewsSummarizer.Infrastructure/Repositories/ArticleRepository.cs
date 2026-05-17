@@ -50,9 +50,11 @@ public sealed class ArticleRepository : IArticleRepository
         CancellationToken cancellationToken)
     {
         return await _dbContext.NewsArticles
-            .Where(x => x.Status == ArticleStatus.Analyzed)
-            .Where(x => x.PublishedAt == null || (x.PublishedAt >= from && x.PublishedAt < to))
-            .OrderByDescending(x => x.PublishedAt ?? x.FetchedAt)
+            .Where(article => article.Status == ArticleStatus.Analyzed)
+            .Where(article =>
+                (article.PublishedAt ?? article.FetchedAt) >= from &&
+                (article.PublishedAt ?? article.FetchedAt) < to)
+            .OrderByDescending(article => article.PublishedAt ?? article.FetchedAt)
             .Take(limit)
             .ToListAsync(cancellationToken);
     }
