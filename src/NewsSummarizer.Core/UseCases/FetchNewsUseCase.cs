@@ -54,6 +54,10 @@ public sealed class FetchNewsUseCase
                 source.LastFetchedAt = now;
                 source.LastError = null;
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 source.LastError = exception.Message;

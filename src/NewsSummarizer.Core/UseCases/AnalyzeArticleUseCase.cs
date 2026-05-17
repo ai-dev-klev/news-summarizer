@@ -48,6 +48,10 @@ public sealed class AnalyzeArticleUseCase
 
                 analyzed++;
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 var result = CreateFailedResult(article.Id, exception);
