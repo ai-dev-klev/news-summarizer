@@ -1,51 +1,50 @@
-namespace NewsSummarizer.Telegram.Commands;
+﻿namespace NewsSummarizer.Telegram.Commands;
 
 public sealed class BotCommandParser
 {
     public BotCommand Parse(string? text)
     {
-        var rawText = text?.Trim() ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(rawText))
+        if (string.IsNullOrWhiteSpace(text))
         {
             return new BotCommand(BotCommandType.Unknown, string.Empty, []);
         }
 
-        var parts = rawText
+        var trimmed = text.Trim();
+        var parts = trimmed
             .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (parts.Length == 0)
         {
-            return new BotCommand(BotCommandType.Unknown, rawText, []);
+            return new BotCommand(BotCommandType.Unknown, trimmed, []);
         }
 
-        var command = NormalizeCommandName(parts[0]);
-        var arguments = parts.Skip(1).ToArray();
+        var commandToken = parts[0];
 
-        var type = command switch
+        if (!commandToken.StartsWith('/'))
         {
-            "/start" => BotCommandType.Start,
-            "/help" => BotCommandType.Help,
-            "/status" => BotCommandType.Status,
-            "/digest" => BotCommandType.Digest,
-            "/opportunities" => BotCommandType.Opportunities,
-            "/analyze" => BotCommandType.Analyze,
+            return new BotCommand(BotCommandType.Unknown, trimmed, parts.Skip(1).ToArray());
+        }
+
+        var commandName = commandToken[1..];
+
+        var botNameSeparator = commandName.IndexOf('@');
+        if (botNameSeparator >= 0)
+        {
+            commandName = commandName[..botNameSeparator];
+        }
+
+        var commandType = commandName.ToLowerInvariant() switch
+        {
+            "start" => BotCommandType.Start,
+            "help" => BotCommandType.Help,
+            "status" => BotCommandType.Status,
+            "digest" => BotCommandType.Digest,
+            "opportunities" => BotCommandType.Opportunities,
+            "opportunity" => BotCommandType.Opportunities,
+            "analyze" => BotCommandType.Analyze,
             _ => BotCommandType.Unknown
         };
 
-        return new BotCommand(type, rawText, arguments);
-    }
-
-    private static string NormalizeCommandName(string value)
-    {
-        var command = value.Trim().ToLowerInvariant();
-
-        var botMentionIndex = command.IndexOf('@');
-        if (botMentionIndex >= 0)
-        {
-            command = command[..botMentionIndex];
-        }
-
-        return command;
+        return new BotCommand(commandType, trimmed, parts.Skip(1).ToArray());
     }
 }

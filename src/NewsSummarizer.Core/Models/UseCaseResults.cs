@@ -35,6 +35,12 @@ public sealed record SendUrgentNotificationsSummary(
     int NotificationsSkippedExisting,
     int ArticlesSkippedByPreferences);
 
+public sealed record SendPendingNotificationsSummary(
+    int NotificationsTaken,
+    int NotificationsSent,
+    int NotificationsFailed,
+    int NotificationsSkippedNoUser);
+
 public sealed record CleanupExpiredDataSummary(
     int ExpiredArticlesDeleted,
     int ExpiredNotificationsDeleted,

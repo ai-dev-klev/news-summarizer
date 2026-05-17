@@ -1,10 +1,12 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using NewsSummarizer.Api;
 using NewsSummarizer.Ai;
 using NewsSummarizer.Core;
 using NewsSummarizer.Core.UseCases;
 using NewsSummarizer.Infrastructure;
 using NewsSummarizer.Infrastructure.Persistence;
 using NewsSummarizer.Telegram;
+LocalEnvLoader.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,6 +76,15 @@ app.MapPost("/debug/send-urgent-notifications", async (
     CancellationToken cancellationToken) =>
 {
     var result = await useCase.ExecuteAsync(cancellationToken);
+
+    return Results.Ok(result);
+});
+app.MapPost("/debug/send-pending-notifications", async (
+    SendPendingNotificationsUseCase useCase,
+    CancellationToken cancellationToken,
+    int limit = 50) =>
+{
+    var result = await useCase.ExecuteAsync(limit, cancellationToken);
 
     return Results.Ok(result);
 });

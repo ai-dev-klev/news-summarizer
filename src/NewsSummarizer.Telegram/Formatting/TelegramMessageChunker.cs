@@ -1,62 +1,42 @@
-namespace NewsSummarizer.Telegram.Formatting;
+﻿namespace NewsSummarizer.Telegram.Formatting;
 
 public sealed class TelegramMessageChunker
 {
-    public IReadOnlyList<string> Split(string text, int maxLength = TelegramMessageLimits.SafeMessageLength)
+    public IReadOnlyList<string> Split(
+        string text,
+        int maxChunkLength = TelegramMessageLimits.SafeMessageLength)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             return [];
         }
 
-        if (maxLength <= 0 || maxLength > TelegramMessageLimits.MaxMessageLength)
+        if (text.Length <= maxChunkLength)
         {
-            throw new ArgumentOutOfRangeException(nameof(maxLength));
-        }
-
-        var normalized = text.Trim();
-
-        if (normalized.Length <= maxLength)
-        {
-            return [normalized];
+            return [text];
         }
 
         var chunks = new List<string>();
-        var current = normalized;
+        var remaining = text.Trim();
 
-        while (current.Length > maxLength)
+        while (remaining.Length > maxChunkLength)
         {
-            var splitAt = FindSplitPosition(current, maxLength);
+            var splitAt = remaining.LastIndexOf('\n', maxChunkLength);
 
-            chunks.Add(current[..splitAt].Trim());
-            current = current[splitAt..].Trim();
+            if (splitAt < maxChunkLength / 2)
+            {
+                splitAt = maxChunkLength;
+            }
+
+            chunks.Add(remaining[..splitAt].Trim());
+            remaining = remaining[splitAt..].Trim();
         }
 
-        if (current.Length > 0)
+        if (!string.IsNullOrWhiteSpace(remaining))
         {
-            chunks.Add(current);
+            chunks.Add(remaining);
         }
 
         return chunks;
-    }
-
-    private static int FindSplitPosition(string text, int maxLength)
-    {
-        var searchLength = Math.Min(maxLength, text.Length);
-        var newlineIndex = text.LastIndexOf('\n', searchLength - 1, searchLength);
-
-        if (newlineIndex > maxLength / 2)
-        {
-            return newlineIndex;
-        }
-
-        var spaceIndex = text.LastIndexOf(' ', searchLength - 1, searchLength);
-
-        if (spaceIndex > maxLength / 2)
-        {
-            return spaceIndex;
-        }
-
-        return maxLength;
     }
 }

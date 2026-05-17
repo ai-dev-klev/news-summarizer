@@ -1,7 +1,5 @@
-namespace NewsSummarizer.Telegram.Formatting;
+﻿namespace NewsSummarizer.Telegram.Formatting;
 
 public sealed record DetailedAnalysisMessageModel(
-    string ArticleTitle,
-    string AnalysisText,
-    string? Url,
-    DateTimeOffset? CreatedAt);
+    string? Title,
+    string? AnalysisText);

@@ -21,11 +21,22 @@ public sealed class NotificationRepository : INotificationRepository
         string dedupKey,
         CancellationToken cancellationToken)
     {
-        return _dbContext.Notifications.AnyAsync(x =>
-            x.UserId == userId &&
-            x.NotificationType == type &&
-            x.DedupKey == dedupKey,
+        return _dbContext.Notifications.AnyAsync(notification =>
+            notification.UserId == userId &&
+            notification.NotificationType == type &&
+            notification.DedupKey == dedupKey,
             cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Notification>> GetPendingAsync(
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.Notifications
+            .Where(notification => notification.Status == NotificationStatus.Pending)
+            .OrderBy(notification => notification.CreatedAt)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task AddAsync(Notification notification, CancellationToken cancellationToken)

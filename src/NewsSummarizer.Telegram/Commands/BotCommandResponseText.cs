@@ -1,43 +1,42 @@
+﻿using NewsSummarizer.Core.Entities;
+
 namespace NewsSummarizer.Telegram.Commands;
 
 public static class BotCommandResponseText
 {
-    public static string Welcome()
+    public static string Welcome(User user)
     {
-        return """
-               News Summarizer готов к работе.
+        var name = string.IsNullOrWhiteSpace(user.FirstName)
+            ? "пользователь"
+            : user.FirstName.Trim();
 
-               Я буду помогать получать краткие сводки новостей, срочные уведомления и подборки перспективных новостей для анализа.
+        return $"""
+                Привет, {name}.
 
-               Используй /help, чтобы посмотреть доступные команды.
-               """;
+                Я news-summarizer bot. Я показываю краткие новостные сводки, возможности для анализа и срочные уведомления.
+
+                На экране должна появиться клавиатура с кнопками:
+                /digest
+                /opportunities
+                /status
+                /help
+
+                Доступные команды:
+                /digest — ежедневная сводка
+                /opportunities — сводка возможностей
+                /analyze <articleId> — подробный анализ новости
+                /help — помощь
+                """;
     }
 
-    public static string StatusPlaceholder()
+    public static string Status(User user)
     {
-        return """
-               Команда /status доступна.
-
-               Подключение реального статуса сервиса будет добавлено позже.
-               """;
-    }
-
-    public static string DigestPlaceholder()
-    {
-        return """
-               Команда /digest доступна.
-
-               Загрузка последнего ежедневного дайджеста будет подключена позже.
-               """;
-    }
-
-    public static string OpportunitiesPlaceholder()
-    {
-        return """
-               Команда /opportunities доступна.
-
-               Загрузка дайджеста перспективных новостей будет подключена позже.
-               """;
+        return $"""
+                Статус профиля: {user.Status}
+                TelegramId: {user.TelegramUserId}
+                Username: {(string.IsNullOrWhiteSpace(user.Username) ? "[не указан]" : user.Username)}
+                UserId: {user.Id}
+                """;
     }
 
     public static string AnalyzeUsage()
@@ -51,17 +50,6 @@ public static class BotCommandResponseText
 
                /analyze 00000000-0000-0000-0000-000000000000
                """;
-    }
-
-    public static string AnalyzePlaceholder(string articleId)
-    {
-        return $"""
-                Команда подробного анализа доступна.
-
-                ArticleId: {articleId}
-
-                Запуск реального AI-анализа будет подключён позже.
-                """;
     }
 
     public static string UnknownCommand()

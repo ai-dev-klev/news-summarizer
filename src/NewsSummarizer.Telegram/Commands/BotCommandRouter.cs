@@ -1,4 +1,4 @@
-namespace NewsSummarizer.Telegram.Commands;
+﻿namespace NewsSummarizer.Telegram.Commands;
 
 public sealed class BotCommandRouter
 {
@@ -6,12 +6,12 @@ public sealed class BotCommandRouter
     {
         return command.Type switch
         {
-            BotCommandType.Start => BotCommandResponseText.Welcome(),
             BotCommandType.Help => BotCommandHelpText.Build(),
-            BotCommandType.Status => BotCommandResponseText.StatusPlaceholder(),
-            BotCommandType.Digest => BotCommandResponseText.DigestPlaceholder(),
-            BotCommandType.Opportunities => BotCommandResponseText.OpportunitiesPlaceholder(),
             BotCommandType.Analyze => RouteAnalyze(command),
+            BotCommandType.Start => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /start Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
+            BotCommandType.Status => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /status Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
+            BotCommandType.Digest => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /digest Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
+            BotCommandType.Opportunities => "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /opportunities Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.",
             _ => BotCommandResponseText.UnknownCommand()
         };
     }
@@ -20,16 +20,11 @@ public sealed class BotCommandRouter
     {
         var articleId = command.FirstArgument;
 
-        if (string.IsNullOrWhiteSpace(articleId))
+        if (string.IsNullOrWhiteSpace(articleId) || !Guid.TryParse(articleId, out _))
         {
             return BotCommandResponseText.AnalyzeUsage();
         }
 
-        if (!Guid.TryParse(articleId, out _))
-        {
-            return BotCommandResponseText.AnalyzeUsage();
-        }
-
-        return BotCommandResponseText.AnalyzePlaceholder(articleId);
+        return "Р С™Р С•Р СР В°Р Р…Р Т‘Р В° /analyze Р С•Р В±РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ TelegramCommandService.";
     }
 }

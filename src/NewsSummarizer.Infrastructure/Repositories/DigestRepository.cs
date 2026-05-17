@@ -22,15 +22,18 @@ public sealed class DigestRepository : IDigestRepository
         DateTimeOffset periodEnd,
         CancellationToken cancellationToken)
     {
-        return _dbContext.Digests.AnyAsync(x =>
-            x.UserId == userId &&
-            x.DigestType == digestType &&
-            x.PeriodStart == periodStart &&
-            x.PeriodEnd == periodEnd,
+        return _dbContext.Digests.AnyAsync(digest =>
+            digest.UserId == userId &&
+            digest.DigestType == digestType &&
+            digest.PeriodStart == periodStart &&
+            digest.PeriodEnd == periodEnd,
             cancellationToken);
     }
 
-    public async Task AddAsync(Digest digest, IReadOnlyCollection<DigestItem> items, CancellationToken cancellationToken)
+    public async Task AddAsync(
+        Digest digest,
+        IReadOnlyCollection<DigestItem> items,
+        CancellationToken cancellationToken)
     {
         await _dbContext.Digests.AddAsync(digest, cancellationToken);
 
@@ -38,6 +41,30 @@ public sealed class DigestRepository : IDigestRepository
         {
             await _dbContext.DigestItems.AddRangeAsync(items, cancellationToken);
         }
+    }
+
+    public Task<Digest?> GetLatestByUserIdAsync(
+        Guid userId,
+        DigestType digestType,
+        CancellationToken cancellationToken)
+    {
+        return _dbContext.Digests
+            .Where(digest =>
+                digest.UserId == userId &&
+                digest.DigestType == digestType)
+            .OrderByDescending(digest => digest.PeriodEnd)
+            .ThenByDescending(digest => digest.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<DigestItem>> GetItemsAsync(
+        Guid digestId,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.DigestItems
+            .Where(item => item.DigestId == digestId)
+            .OrderBy(item => item.Position)
+            .ToListAsync(cancellationToken);
     }
 
     public Task SaveChangesAsync(CancellationToken cancellationToken)

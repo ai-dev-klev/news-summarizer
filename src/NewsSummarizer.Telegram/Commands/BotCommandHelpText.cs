@@ -1,24 +1,21 @@
-namespace NewsSummarizer.Telegram.Commands;
+﻿namespace NewsSummarizer.Telegram.Commands;
 
 public static class BotCommandHelpText
 {
     public static string Build()
     {
         return """
-               Доступные команды:
+               Команды бота:
 
-               /start — зарегистрироваться или обновить профиль
-               /help — показать список команд
-               /status — показать текущий статус сервиса
-               /digest — показать последний ежедневный дайджест
-               /opportunities — показать последний дайджест перспективных новостей
-               /analyze <articleId> — запросить подробный анализ новости
+               /start — создать или обновить профиль
+               /help — показать помощь
+               /status — показать состояние профиля
+               /digest — показать последнюю ежедневную сводку
+               /opportunities — показать последнюю сводку возможностей
+               /analyze <articleId> — сделать подробный AI-анализ новости
 
-               Примеры:
-
-               /digest
-               /opportunities
-               /analyze 00000000-0000-0000-0000-000000000000
+               Перед демо обычно запускается pipeline:
+               seed → fetch → analyze → build digests → send notifications.
                """;
     }
 }

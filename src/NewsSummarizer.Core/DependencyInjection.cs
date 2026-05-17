@@ -20,6 +20,11 @@ public static class DependencyInjection
         services.AddScoped<CleanupExpiredDataUseCase>();
         services.AddScoped<SendUrgentNotificationsUseCase>();
 
+        services.AddScoped<EnsureTelegramUserUseCase>();
+        services.AddScoped<GetLatestDigestUseCase>();
+        services.AddScoped<AnalyzeArticleInDetailUseCase>();
+        services.AddScoped<SendPendingNotificationsUseCase>();
+
         return services;
     }
 }

@@ -1,4 +1,4 @@
-namespace NewsSummarizer.Telegram.Commands;
+﻿namespace NewsSummarizer.Telegram.Commands;
 
 public static class BotCommandExamples
 {

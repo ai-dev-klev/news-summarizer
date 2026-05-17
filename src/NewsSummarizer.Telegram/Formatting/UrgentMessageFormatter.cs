@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace NewsSummarizer.Telegram.Formatting;
 
@@ -8,35 +8,32 @@ public sealed class UrgentMessageFormatter
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine("Urgent news");
-        builder.AppendLine(TelegramText.Required(message.Title, "Untitled urgent news"));
+        builder.AppendLine($"Срочно: {message.Title}");
 
         if (message.UrgencyScore is not null)
         {
-            builder.AppendLine($"Urgency score: {message.UrgencyScore}");
+            builder.AppendLine($"Срочность: {message.UrgencyScore}/100");
         }
-
-        builder.AppendLine($"Published: {TelegramText.FormatDate(message.PublishedAt)}");
 
         var summary = TelegramText.Optional(message.Summary);
         if (summary is not null)
         {
             builder.AppendLine();
-            builder.AppendLine($"Summary: {summary}");
+            builder.AppendLine($"Кратко: {summary}");
         }
 
         var reason = TelegramText.Optional(message.Reason);
         if (reason is not null)
         {
             builder.AppendLine();
-            builder.AppendLine($"Why urgent: {reason}");
+            builder.AppendLine($"Почему срочно: {reason}");
         }
 
         var url = TelegramText.Optional(message.Url);
         if (url is not null)
         {
             builder.AppendLine();
-            builder.AppendLine($"Link: {url}");
+            builder.AppendLine($"Ссылка: {url}");
         }
 
         return TelegramText.Truncate(builder.ToString().Trim(), TelegramMessageLimits.SafeMessageLength);

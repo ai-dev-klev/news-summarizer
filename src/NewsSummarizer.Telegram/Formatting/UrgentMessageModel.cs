@@ -1,4 +1,4 @@
-namespace NewsSummarizer.Telegram.Formatting;
+﻿namespace NewsSummarizer.Telegram.Formatting;
 
 public sealed record UrgentMessageModel(
     string Title,
